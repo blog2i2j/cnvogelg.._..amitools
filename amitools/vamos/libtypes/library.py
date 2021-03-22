@@ -1,11 +1,8 @@
-from amitools.vamos.astructs import LibraryStruct
+from amitools.vamos.libstructs import LibraryStruct
 from amitools.vamos.label import LabelLib
 from amitools.vamos.machine.opcodes import op_rts
-from .atype import AmigaType
-from .atypedef import AmigaTypeDef
+from amitools.vamos.atypes import AmigaType, AmigaTypeDef, BitFieldType, CString
 from .node import NodeType
-from .bitfield import BitFieldType
-from .cstring import CString
 
 
 @BitFieldType

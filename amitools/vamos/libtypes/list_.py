@@ -1,7 +1,6 @@
-from amitools.vamos.astructs import ListStruct, MinListStruct
+from amitools.vamos.libstructs import ListStruct, MinListStruct
+from amitools.vamos.atypes import AmigaType, AmigaTypeDef
 from .node import Node, NodeType, MinNode
-from .atype import AmigaType
-from .atypedef import AmigaTypeDef
 
 
 class ListIter(object):
@@ -28,88 +27,70 @@ class ListIter(object):
 # common list funcs
 
 
-def iter_func(self):
-    return ListIter(self)
+class ListBase:
+    def __iter__(self):
+        return ListIter(self)
 
+    def __len__(self):
+        l = 0
+        node = self._head.get_succ()
+        while True:
+            node = node.get_succ()
+            if node is None:
+                break
+            l += 1
+        return l
 
-def len_func(self):
-    l = 0
-    node = self._head.get_succ()
-    while True:
-        node = node.get_succ()
+    def iter_at(self, node):
+        return ListIter(self, node)
+
+    def add_head(self, node):
+        n = self._head.get_succ()
+        node.set_pred(self._head)
+        node.set_succ(n)
+        self._head.set_succ(node)
+        n.set_pred(node)
+
+    def add_tail(self, node):
+        tp = self.get_tail_pred()
+        node.set_succ(self._tail)
+        self._tail.set_pred(node)
+        node.set_pred(tp)
+        tp.set_succ(node)
+
+    def rem_head(self):
+        node = self._head.get_succ()
         if node is None:
-            break
-        l += 1
-    return l
+            return None
+        node.remove()
+        return node
 
+    def rem_tail(self):
+        node = self.get_tail_pred()
+        if node is None:
+            return None
+        node.remove()
+        return node
 
-def iter_at(self, node):
-    return ListIter(self, node)
-
-
-def add_head(self, node):
-    n = self._head.get_succ()
-    node.set_pred(self._head)
-    node.set_succ(n)
-    self._head.set_succ(node)
-    n.set_pred(node)
-
-
-def add_tail(self, node):
-    tp = self.get_tail_pred()
-    node.set_succ(self._tail)
-    self._tail.set_pred(node)
-    node.set_pred(tp)
-    tp.set_succ(node)
-
-
-def rem_head(self):
-    node = self._head.get_succ()
-    if node is None:
-        return None
-    node.remove()
-    return node
-
-
-def rem_tail(self):
-    node = self.get_tail_pred()
-    if node is None:
-        return None
-    node.remove()
-    return node
-
-
-def insert(self, node, pred):
-    if pred is not None and pred != self._head:
-        pred_succ = pred.get_succ()
-        if pred_succ:
-            # normal node
-            node.set_succ(pred_succ)
-            node.set_pred(pred)
-            pred_succ.set_pred(node)
-            pred.set_succ(node)
+    def insert(self, node, pred):
+        if pred is not None and pred != self._head:
+            pred_succ = pred.get_succ()
+            if pred_succ:
+                # normal node
+                node.set_succ(pred_succ)
+                node.set_pred(pred)
+                pred_succ.set_pred(node)
+                pred.set_succ(node)
+            else:
+                # last node
+                self.add_tail(node)
         else:
-            # last node
-            self.add_tail(node)
-    else:
-        # first node
-        self.add_head(node)
+            # first node
+            self.add_head(node)
 
 
-funcs = {
-    "__iter__": iter_func,
-    "__len__": len_func,
-    "iter_at": iter_at,
-    "add_head": add_head,
-    "add_tail": add_tail,
-    "rem_head": rem_head,
-    "rem_tail": rem_tail,
-    "insert": insert,
-}
-
-
-@AmigaTypeDef(MinListStruct, funcs=funcs)
-class MinList(AmigaType):
+@AmigaTypeDef(MinListStruct)
+class MinList(AmigaType, ListBase):
     def __init__(self, mem, addr):
         AmigaType.__init__(self, mem, addr)
         self._head = MinNode(mem, self.addr)
@@ -129,8 +110,8 @@ class MinList(AmigaType):
         self.set_tail_pred(self._head)
 
 
-@AmigaTypeDef(ListStruct, wrap={"type": NodeType}, funcs=funcs)
-class List(AmigaType):
+@AmigaTypeDef(ListStruct, wrap={"type": NodeType})
+class List(AmigaType, ListBase):
     def __init__(self, mem, addr):
         AmigaType.__init__(self, mem, addr)
         self._head = Node(mem, self.addr)

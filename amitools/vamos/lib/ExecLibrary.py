@@ -1,11 +1,19 @@
 from amitools.vamos.machine.regs import *
 from amitools.vamos.libnative import MakeFuncs, InitStruct, MakeLib, LibFuncs, InitRes
 from amitools.vamos.libcore import LibImpl
-from amitools.vamos.astructs import *
-from amitools.vamos.atypes import ExecLibrary as ExecLibraryType
-from amitools.vamos.atypes import NodeType, List
+from amitools.vamos.astructs import AccessStruct
+from amitools.vamos.libstructs import (
+    ExecLibraryStruct,
+    StackSwapStruct,
+    IORequestStruct,
+    ListStruct,
+    NodeStruct,
+    SignalSemaphoreStruct,
+)
+from amitools.vamos.libtypes import ExecLibrary as ExecLibraryType
+from amitools.vamos.libtypes import NodeType, List
 from amitools.vamos.log import log_exec
-from amitools.vamos.error import *
+from amitools.vamos.error import VamosInternalError, UnsupportedFeatureError
 from .lexec.PortManager import PortManager
 from .lexec.SemaphoreManager import SemaphoreManager
 from .lexec.Pool import Pool

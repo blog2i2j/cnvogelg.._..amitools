@@ -1,10 +1,10 @@
 import pytest
 from amitools.vamos.machine import MockMemory
 from amitools.vamos.mem import MemoryAlloc
-from amitools.vamos.atypes import Task, TaskFlags, TaskState, NodeType
+from amitools.vamos.libtypes import Task, TaskFlags, TaskState, NodeType
 
 
-def atypes_task_base_test():
+def libtypes_task_base_test():
     mem = MockMemory()
     alloc = MemoryAlloc(mem)
     # alloc task

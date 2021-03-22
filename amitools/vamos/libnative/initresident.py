@@ -1,4 +1,4 @@
-from amitools.vamos.atypes import Resident, ResidentFlags, Library, LibFlags, NodeType
+from amitools.vamos.libtypes import Resident, ResidentFlags, Library, LibFlags, NodeType
 from .makelib import MakeLib
 from .libfuncs import LibFuncs
 

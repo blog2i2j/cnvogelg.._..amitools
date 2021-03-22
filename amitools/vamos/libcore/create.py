@@ -1,5 +1,5 @@
-from amitools.vamos.astructs import LibraryStruct
-from amitools.vamos.atypes import Library, NodeType
+from amitools.vamos.libstructs import LibraryStruct
+from amitools.vamos.libtypes import Library, NodeType
 from amitools.fd import read_lib_fd, generate_fd
 from .vlib import VLib
 from .stub import LibStubGen

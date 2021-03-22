@@ -1,6 +1,5 @@
-from amitools.vamos.astructs import ProcessStruct, CLIStruct, PathListStruct
-from .atype import AmigaTypeWithName, AmigaType
-from .atypedef import AmigaTypeDef
+from amitools.vamos.libstructs import ProcessStruct, CLIStruct, PathListStruct
+from amitools.vamos.atypes import AmigaTypeWithName, AmigaType, AmigaTypeDef
 from .node import NodeType
 
 

@@ -1,10 +1,7 @@
-from amitools.vamos.astructs import ResidentStruct, AutoInitStruct, LibraryStruct
+from amitools.vamos.libstructs import ResidentStruct, AutoInitStruct, LibraryStruct
 from amitools.vamos.mem import MemoryCache
-from .bitfield import BitFieldType
+from amitools.vamos.atypes import AmigaType, AmigaTypeDef, BitFieldType, CString
 from .node import NodeType
-from .atype import AmigaType
-from .atypedef import AmigaTypeDef
-from .cstring import CString
 
 
 @BitFieldType

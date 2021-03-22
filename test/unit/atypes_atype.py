@@ -1,23 +1,40 @@
+from amitools.vamos.atypes.bstring import BString
 from amitools.vamos.machine import MockMemory
 from amitools.vamos.mem import MemoryAlloc
-from amitools.vamos.astructs import AmigaStruct, AmigaStructDef
+from amitools.vamos.astructs import (
+    AmigaStruct,
+    AmigaStructDef,
+    WORD,
+    UWORD,
+    BPTR_VOID,
+    CSTR,
+    BSTR,
+    LONG,
+    APTR,
+    APTR_SELF,
+)
 from amitools.vamos.atypes import AmigaType, AmigaTypeDef, CString
 
 
 @AmigaStructDef
 class MyStruct(AmigaStruct):
     _format = [
-        ("WORD", "ms_Word"),
-        ("UWORD", "ms_Pad"),
-        ("BPTR", "ms_SegList"),
-        ("LONG", "ms_StackSize"),
-        ("char*", "ms_String"),
+        (WORD, "ms_Word"),
+        (UWORD, "ms_Pad"),
+        (BPTR_VOID, "ms_SegList"),
+        (LONG, "ms_StackSize"),
+        (CSTR, "ms_String"),
+        (BSTR, "ms_BString"),
     ]
 
 
 @AmigaStructDef
 class SubStruct(AmigaStruct):
-    _format = [("My", "ss_My"), ("My*", "ss_MyPtr"), ("Sub*", "ss_SubPtr")]
+    _format = [
+        (MyStruct, "ss_My"),
+        (APTR(MyStruct), "ss_MyPtr"),
+        (APTR_SELF, "ss_SubPtr"),
+    ]
 
 
 class Bla(object):
@@ -81,6 +98,19 @@ def atypes_atype_base_test():
     assert mt.string == txt
     assert mt.string == cstr
     cstr.free()
+    # bstring
+    print("DICT", mt.__dict__)
+    assert type(mt.get_b_string()) is BString
+    bstr = BString.alloc(alloc, txt)
+    bstr_addr = bstr.get_addr()
+    mt.set_b_string(bstr)
+    assert mt.get_b_string() == txt
+    assert mt.get_b_string() == BString(mem, bstr_addr)
+    assert mt.get_b_string(ptr=True) == bstr_addr
+    mt.b_string = bstr
+    assert mt.b_string == txt
+    assert mt.b_string == bstr
+    bstr.free()
 
 
 def atypes_atype_complex_test():

@@ -2,7 +2,7 @@ from amitools.vamos.loader import SegmentLoader
 from amitools.vamos.mem import MemoryAlloc
 from amitools.vamos.machine import Machine
 from amitools.vamos.machine.regs import *
-from amitools.vamos.atypes import (
+from amitools.vamos.libtypes import (
     Resident,
     ResidentFlags,
     NodeType,

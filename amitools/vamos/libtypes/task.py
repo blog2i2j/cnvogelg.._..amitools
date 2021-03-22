@@ -1,10 +1,12 @@
-from amitools.vamos.astructs import TaskStruct
-from .atype import AmigaTypeWithName
-from .atypedef import AmigaTypeDef
-from .bitfield import BitFieldType
-from .enum import EnumType
+from amitools.vamos.libstructs import TaskStruct
+from amitools.vamos.atypes import (
+    AmigaTypeWithName,
+    AmigaTypeDef,
+    BitFieldType,
+    EnumType,
+    CString,
+)
 from .node import NodeType
-from .cstring import CString
 
 
 @BitFieldType

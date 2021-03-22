@@ -1,8 +1,11 @@
-from amitools.vamos.astructs import NodeStruct, MinNodeStruct
-from .atype import AmigaType, AmigaTypeWithName
-from .atypedef import AmigaTypeDef
-from .enum import EnumType
-from .cstring import CString
+from amitools.vamos.libstructs import NodeStruct, MinNodeStruct
+from amitools.vamos.atypes import (
+    AmigaType,
+    AmigaTypeWithName,
+    AmigaTypeDef,
+    EnumType,
+    CString,
+)
 
 
 @EnumType
@@ -37,23 +40,21 @@ class NodeType(object):
 # common funcs for nodes
 
 
-def remove(self, clear=True):
-    succ = self.get_succ()
-    pred = self.get_pred()
-    if succ is None or pred is None:
-        raise ValueError("remove node without succ/pred!")
-    succ.set_pred(pred)
-    pred.set_succ(succ)
-    if clear:
-        self.set_succ(None)
-        self.set_pred(None)
+class NodeBase:
+    def remove(self, clear=True):
+        succ = self.get_succ()
+        pred = self.get_pred()
+        if succ is None or pred is None:
+            raise ValueError("remove node without succ/pred!")
+        succ.set_pred(pred)
+        pred.set_succ(succ)
+        if clear:
+            self.set_succ(None)
+            self.set_pred(None)
 
 
-funcs = {"remove": remove}
-
-
-@AmigaTypeDef(MinNodeStruct, funcs=funcs)
-class MinNode(AmigaType):
+@AmigaTypeDef(MinNodeStruct)
+class MinNode(AmigaType, NodeBase):
     """wrap an Exec MinNode in memory an allow to operate on its values."""
 
     def __str__(self):
@@ -68,8 +69,8 @@ class MinNode(AmigaType):
         self.set_pred(pred)
 
 
-@AmigaTypeDef(NodeStruct, wrap={"type": NodeType}, funcs=funcs)
-class Node(AmigaTypeWithName):
+@AmigaTypeDef(NodeStruct, wrap={"type": NodeType})
+class Node(AmigaTypeWithName, NodeBase):
     """wrap an Exec Node in memory an allow to operate on its values."""
 
     def __str__(self):

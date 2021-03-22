@@ -1,23 +1,23 @@
 import pytest
 from amitools.vamos.machine import MockMemory
 from amitools.vamos.mem import MemoryAlloc
-from amitools.vamos.atypes import Node, NodeType, MinNode
-from amitools.vamos.astructs import NodeStruct, MinNodeStruct
+from amitools.vamos.libtypes import Node, NodeType, MinNode
+from amitools.vamos.libstructs import NodeStruct, MinNodeStruct
 
 
-def atypes_node_type_to_str_test():
+def libtypes_node_type_to_str_test():
     assert NodeType.to_str(NodeType.NT_UNKNOWN) == "NT_UNKNOWN"
     with pytest.raises(ValueError):
         NodeType.to_str(-1)
 
 
-def atypes_node_type_from_str_test():
+def libtypes_node_type_from_str_test():
     assert NodeType.from_str("NT_INTERRUPT") == NodeType.NT_INTERRUPT
     with pytest.raises(ValueError):
         NodeType.from_str("bla")
 
 
-def atypes_node_base_test():
+def libtypes_node_base_test():
     mem = MockMemory()
     text = "hello, world!"
     mem.w_cstr(12, text)
@@ -38,7 +38,7 @@ def atypes_node_base_test():
     assert node.get_name() == text
 
 
-def atypes_node_setup_test():
+def libtypes_node_setup_test():
     mem = MockMemory()
     text = "hello, world!"
     mem.w_cstr(12, text)
@@ -54,7 +54,7 @@ def atypes_node_setup_test():
     node.set_type(NodeType(NodeType.NT_DEVICE))
 
 
-def atypes_node_setup_min_test():
+def libtypes_node_setup_min_test():
     mem = MockMemory()
     node = MinNode(mem, 0x42)
     node.setup(1234, 5678)
@@ -63,7 +63,7 @@ def atypes_node_setup_min_test():
     assert node.get_pred() == 5678
 
 
-def atypes_node_str_test():
+def libtypes_node_str_test():
     mem = MockMemory()
     text = "hello, world!"
     mem.w_cstr(12, text)
@@ -72,14 +72,14 @@ def atypes_node_str_test():
     assert str(node) == "[Node:@000042,p=005678,s=001234,NT_DEVICE,-5,'hello, world!']"
 
 
-def atypes_node_str_min_test():
+def libtypes_node_str_min_test():
     mem = MockMemory()
     min_node = MinNode(mem, 0x80)
     min_node.setup(0x1234, 0x5678)
     assert str(min_node) == "[MinNode:@000080,p=005678,s=001234]"
 
 
-def atypes_node_remove_test():
+def libtypes_node_remove_test():
     mem = MockMemory()
     text = "hello, world!"
     mem.w_cstr(12, text)
@@ -88,14 +88,14 @@ def atypes_node_remove_test():
     node.remove()
 
 
-def atypes_node_remove_min_test():
+def libtypes_node_remove_min_test():
     mem = MockMemory()
     min_node = MinNode(mem, 0x80)
     min_node.setup(0x60, 0x100)
     min_node.remove()
 
 
-def atypes_node_alloc_test():
+def libtypes_node_alloc_test():
     mem = MockMemory()
     alloc = MemoryAlloc(mem)
     node = Node.alloc(alloc)
@@ -104,7 +104,7 @@ def atypes_node_alloc_test():
     assert alloc.is_all_free()
 
 
-def atypes_node_alloc_name_test():
+def libtypes_node_alloc_name_test():
     mem = MockMemory()
     alloc = MemoryAlloc(mem)
     node = Node.alloc(alloc, "foobar")
@@ -114,7 +114,7 @@ def atypes_node_alloc_name_test():
     assert alloc.is_all_free()
 
 
-def atypes_node_alloc_min_test():
+def libtypes_node_alloc_min_test():
     mem = MockMemory()
     alloc = MemoryAlloc(mem)
     node = MinNode.alloc(alloc)

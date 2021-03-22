@@ -1,10 +1,10 @@
 import pytest
 from amitools.vamos.machine import MockMemory
 from amitools.vamos.mem import MemoryAlloc
-from amitools.vamos.atypes import MsgPort, Message, MsgPortFlags, NodeType
+from amitools.vamos.libtypes import MsgPort, Message, MsgPortFlags, NodeType
 
 
-def atypes_msg_msgport_test():
+def libtypes_msg_msgport_test():
     mem = MockMemory()
     alloc = MemoryAlloc(mem)
     # alloc msg port
@@ -26,7 +26,7 @@ def atypes_msg_msgport_test():
     assert alloc.is_all_free()
 
 
-def atypes_msg_msg_test():
+def libtypes_msg_msg_test():
     mem = MockMemory()
     alloc = MemoryAlloc(mem)
     # alloc msg

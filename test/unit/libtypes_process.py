@@ -1,11 +1,10 @@
 import pytest
 from amitools.vamos.machine import MockMemory
 from amitools.vamos.mem import MemoryAlloc
-from amitools.vamos.astructs import BAddr
-from amitools.vamos.atypes import Process, NodeType, CLI
+from amitools.vamos.libtypes import Process, NodeType, CLI
 
 
-def atypes_process_base_test():
+def libtypes_process_base_test():
     mem = MockMemory()
     alloc = MemoryAlloc(mem)
     # alloc proc
@@ -21,17 +20,17 @@ def atypes_process_base_test():
     assert alloc.is_all_free()
 
 
-def atypes_process_bptr_test():
+def libtypes_process_bptr_test():
     mem = MockMemory()
     alloc = MemoryAlloc(mem)
     # alloc proc
     proc = Process.alloc(alloc)
-    # set list
-    proc.seg_list = 0x100
-    assert proc.seg_list == BAddr(0x40)
+    # set list (as baddr)
+    proc.seg_list = 0x40
+    assert proc.seg_list == 0x40
     # check in mem seg list baddr
     struct = proc.get_type_struct()
-    off = struct.pr_SegList_field.offset
+    off = struct.pr_SegList_def.offset
     addr = proc.addr + off
     assert mem.r32(addr) == 0x40
     # setup CLI
@@ -40,9 +39,9 @@ def atypes_process_bptr_test():
     assert type(proc.cli) is CLI
     assert proc.cli == cli.addr
     # check in mem CLI baddr
-    off = struct.pr_CLI_field.offset
+    off = struct.pr_CLI_def.offset
     addr = proc.addr + off
-    assert mem.r32(addr) == BAddr.from_addr(cli.addr).get_baddr()
+    assert mem.r32(addr) == cli.addr
     cli.free()
     # done
     proc.free()

@@ -1,7 +1,7 @@
 from amitools.vamos.loader import SegmentLoader
 from amitools.vamos.machine import MockMemory
 from amitools.vamos.mem import MemoryAlloc
-from amitools.vamos.atypes import Resident, ResidentFlags, NodeType
+from amitools.vamos.libtypes import Resident, ResidentFlags, NodeType
 
 
 def load_lib(mem, buildlibnix):
@@ -17,7 +17,7 @@ def load_lib(mem, buildlibnix):
     return addr, size, end
 
 
-def atypes_resident_find_lib_test(buildlibnix):
+def libtypes_resident_find_lib_test(buildlibnix):
     mem = MockMemory(fill=23)
     addr, size, end = load_lib(mem, buildlibnix)
     # search list
@@ -33,7 +33,7 @@ def atypes_resident_find_lib_test(buildlibnix):
     assert res2.is_valid()
 
 
-def atypes_resident_read_lib_test(buildlibnix):
+def libtypes_resident_read_lib_test(buildlibnix):
     mem = MockMemory(fill=23)
     addr, size, end = load_lib(mem, buildlibnix)
     res = Resident.find(mem, addr, size)
@@ -56,7 +56,7 @@ def atypes_resident_read_lib_test(buildlibnix):
     assert res.is_valid()
 
 
-def atypes_resident_alloc_test():
+def libtypes_resident_alloc_test():
     mem = MockMemory(fill=23)
     alloc = MemoryAlloc(mem)
     # alloc
@@ -66,7 +66,7 @@ def atypes_resident_alloc_test():
     assert alloc.is_all_free()
 
 
-def atypes_resident_setup_test():
+def libtypes_resident_setup_test():
     mem = MockMemory(fill=23)
     alloc = MemoryAlloc(mem)
     # alloc

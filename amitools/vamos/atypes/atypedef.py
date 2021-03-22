@@ -1,16 +1,16 @@
 import re
+from amitools.vamos.astructs import CSTR, BSTR, AmigaStruct, PointerType
 from .atype import AmigaType, AmigaTypeWithName
 from .cstring import CString
+from .bstring import BString
 
 
 class AmigaTypeDecorator(object):
-    def __init__(self, struct_def, wrap, funcs, allow_struct):
+    def __init__(self, struct_def, wrap):
         if wrap is None:
             wrap = {}
         self.struct_def = struct_def
         self.wrap = wrap
-        self.funcs = funcs
-        self.allow_struct = allow_struct
 
     def decorate(self, cls):
         name = self._validate_class(cls)
@@ -21,19 +21,11 @@ class AmigaTypeDecorator(object):
         cls._type_pool[name] = cls
         # finally create methods
         self._gen_field_methods(cls)
-        # add custom functions
-        if self.funcs:
-            self._add_custom_funcs(cls, self.funcs)
         return cls
-
-    def _add_custom_funcs(self, cls, funcs):
-        for name in funcs:
-            func = funcs[name]
-            setattr(cls, name, func)
 
     def _validate_class(self, cls):
         # make sure cls is derived from AmigaStruct
-        if cls.__bases__ != (AmigaType,) and cls.__bases__ != (AmigaTypeWithName,):
+        if not issubclass(cls, AmigaType):
             raise RuntimeError("cls must dervive from AmigaType")
         # get name of type
         name = self.struct_def.get_type_name()
@@ -41,55 +33,57 @@ class AmigaTypeDecorator(object):
 
     def _gen_field_methods(self, cls):
         # add get/set methods
-        for field in self.struct_def.get_fields():
+        for field_def in self.struct_def.get_field_defs():
             # make a lowercase/underscore name without prefix
             # e.g. lh_TailPred -> tail_pred
-            base_name = self._name_convert(field.name)
+            base_name = self._name_convert(field_def.name)
 
-            # c_str handling
-            if field.type_sig == "char*":
-                self._gen_cstr_get_set(base_name, cls, field)
+            # string handling
+            if field_def.type is CSTR:
+                self._gen_str_get_set(base_name, cls, field_def, CString)
+            elif field_def.type is BSTR:
+                self._gen_str_get_set(base_name, cls, field_def, BString)
             # struct types
-            elif field.struct_type:
-                if field.is_pointer:
-                    self._gen_struct_ptr_get_set(base_name, cls, field)
+            elif issubclass(field_def.type, AmigaStruct):
+                self._gen_struct_get(base_name, cls, field_def)
+            # pointer
+            elif issubclass(field_def.type, PointerType):
+                ref_type = field_def.type.get_ref_type()
+                if issubclass(ref_type, AmigaStruct):
+                    self._gen_struct_ptr_get_set(base_name, cls, field_def)
                 else:
-                    self._gen_struct_get(base_name, cls, field)
+                    self._gen_default_get_set(base_name, cls, field_def)
             # base types
             else:
-                wrap_funcs = self._is_wrapped(field, base_name)
+                wrap_funcs = self._is_wrapped(field_def, base_name)
                 if wrap_funcs:
-                    self._gen_wrap_get_set(base_name, cls, field, wrap_funcs)
+                    self._gen_wrap_get_set(base_name, cls, field_def, wrap_funcs)
                 else:
-                    self._gen_default_get_set(base_name, cls, field)
+                    self._gen_default_get_set(base_name, cls, field_def)
 
             # common field method
-            self._gen_common_field_methods(base_name, cls, field)
+            self._gen_common_field_methods(base_name, cls, field_def)
 
-    def _get_gen_type(self, cls, field):
-        # what type to generate for a struct field?
-        gen_type = field.struct_type
+    def _get_gen_type(self, cls, ref_stype):
         # its me -> use my type class
-        if cls._struct_def == gen_type:
+        if cls._struct_def == ref_stype:
             return cls
-        # find other type
-        name = gen_type.get_type_name()
-        t_type = cls.find_type(name)
-        if t_type is None:
-            # no type class found. can we use struct type?
-            if not self.allow_struct:
-                raise RuntimeError("can't find type for ptr: " + name)
-        else:
-            gen_type = t_type
-        return gen_type
+        # find an atype with the same name
+        name = ref_stype.get_type_name()
+        ref_atype = cls.find_type(name)
+        if ref_atype is not None:
+            return ref_atype
+        # stick with struct type
+        return ref_stype
 
-    def _gen_struct_ptr_get_set(self, base_name, cls, field):
+    def _gen_struct_ptr_get_set(self, base_name, cls, field_def):
         """access a struct pointer. return associated struct_type"""
-        index = field.index
-        gen_type = self._get_gen_type(cls, field)
+        index = field_def.index
+        ref_stype = field_def.type.get_ref_type()
+        gen_type = self._get_gen_type(cls, ref_stype)
 
         def get_struct_ptr(self, ptr=False):
-            addr = int(self._struct.read_field_index(index))
+            addr = int(self._struct.get_field_by_index(index))
             if ptr:
                 return addr
             if addr == 0:
@@ -107,74 +101,74 @@ class AmigaTypeDecorator(object):
                     raise ValueError(
                         "invalid type assign: want=%s, got=%s" % (gen_type, type(val))
                     )
-            self._struct.write_field_index(index, val)
+            self._struct.get_field_by_index(index).set(val)
 
         self._setup_get_set(base_name, cls, get_struct_ptr, set_struct_ptr)
 
-    def _gen_struct_get(self, base_name, cls, field):
+    def _gen_struct_get(self, base_name, cls, field_def):
         """generate a getter for embedded structs"""
-        gen_type = self._get_gen_type(cls, field)
+        gen_type = self._get_gen_type(cls, field_def.type)
 
         def get_struct(self):
-            addr = self.addr + field.offset
+            addr = self.addr + field_def.offset
             return gen_type(self.mem, addr)
 
         setattr(cls, "get_" + base_name, get_struct)
 
-    def _is_wrapped(self, field, base_name):
+    def _is_wrapped(self, field_def, base_name):
         # allow field name
-        if field.name in self.wrap:
-            return self.wrap[field.name]
+        if field_def.name in self.wrap:
+            return self.wrap[field_def.name]
         # and converted base name
         elif base_name in self.wrap:
             return self.wrap[base_name]
 
-    def _gen_common_field_methods(self, base_name, cls, field):
+    def _gen_common_field_methods(self, base_name, cls, field_def):
         def get_field_addr(self):
             """return the address of the field itself"""
-            return self.addr + field.offset
+            return self.addr + field_def.offset
 
         setattr(cls, "get_" + base_name + "_addr", get_field_addr)
 
-    def _gen_cstr_get_set(self, base_name, cls, field):
-        index = field.index
+    def _gen_str_get_set(self, base_name, cls, field_def, str_cls):
+        index = field_def.index
 
-        def get_cstr(self, ptr=False):
-            """return the c_str or "" if ptr==0
+        def get_str(self, ptr=False):
+            """return the str or "" if ptr==0
             or the addr of the pointer (addr=True)"""
-            addr = self._struct.read_field_index(index)
+            addr = self._struct.get_field_by_index(index).get_ref_addr()
             if ptr:
                 return addr
-            return CString(self.mem, addr)
+            return str_cls(self.mem, addr)
 
-        def set_cstr(self, val):
-            """set a c_str either by address or with a CString object"""
+        def set_str(self, val):
+            """set a str either by address or with a B/CString object"""
             if type(val) is int:
                 ptr = val
-            elif isinstance(val, CString):
+            elif isinstance(val, str_cls):
                 ptr = val.get_addr()
             else:
                 raise ValueError("set cstring: wrong value: %s" % val)
-            self._struct.write_field_index(index, ptr)
+            self._struct.get_field_by_index(index).set_ref_addr(ptr)
 
-        self._setup_get_set(base_name, cls, get_cstr, set_cstr)
+        self._setup_get_set(base_name, cls, get_str, set_str)
 
     def _setup_get_set(self, base_name, cls, get_func, set_func):
         setattr(cls, "get_" + base_name, get_func)
         setattr(cls, "set_" + base_name, set_func)
 
-    def _gen_default_get_set(self, base_name, cls, field):
-        index = field.index
+    def _gen_default_get_set(self, base_name, cls, field_def):
+        index = field_def.index
 
         def get_func(self):
-            return self._struct.read_field_index(index)
+            return self._struct.get_field_by_index(index).get()
 
         def set_func(self, val):
-            self._struct.write_field_index(index, val)
+            self._struct.get_field_by_index(index).set(val)
 
         self._setup_get_set(base_name, cls, get_func, set_func)
 
-    def _gen_wrap_get_set(self, base_name, cls, field, wrap_funcs):
+    def _gen_wrap_get_set(self, base_name, cls, field_def, wrap_funcs):
         if type(wrap_funcs) in (list, tuple):
             get_wrap = wrap_funcs[0]
             set_wrap = wrap_funcs[1]
@@ -186,11 +180,11 @@ class AmigaTypeDecorator(object):
         if set_wrap is None:
             set_wrap = int
 
-        index = field.index
+        index = field_def.index
         if get_wrap:
 
             def get_func(self, raw=False):
-                val = self._struct.read_field_index(index)
+                val = self._struct.get_field_by_index(index).get()
                 if raw:
                     return val
                 return get_wrap(val)
@@ -198,19 +192,19 @@ class AmigaTypeDecorator(object):
         else:
 
             def get_func(self):
-                return self._struct.read_field_index(index)
+                return self._struct.get_field_by_index(index).get()
 
         if set_wrap:
 
             def set_func(self, val, raw=False):
                 if not raw:
                     val = set_wrap(val)
-                self._struct.write_field_index(index, val)
+                self._struct.get_field_by_index(index).set(val)
 
         else:
 
             def set_func(self, val):
-                self._struct.write_field_index(index, val)
+                self._struct.get_field_by_index(index).set(val)
 
         self._setup_get_set(base_name, cls, get_func, set_func)
 
@@ -225,10 +219,10 @@ class AmigaTypeDecorator(object):
         return re.sub("([a-z0-9])([A-Z])", r"\1_\2", s1).lower()
 
 
-def AmigaTypeDef(struct_def, wrap=None, funcs=None, allow_struct=False):
+def AmigaTypeDef(struct_def, wrap=None):
     """a class decorator that automatically adds get/set methods
     for AmigaStruct fields"""
-    decorator = AmigaTypeDecorator(struct_def, wrap, funcs, allow_struct)
+    decorator = AmigaTypeDecorator(struct_def, wrap)
 
     def deco_func(cls):
         return decorator.decorate(cls)

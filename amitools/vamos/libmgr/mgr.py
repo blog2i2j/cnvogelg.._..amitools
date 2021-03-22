@@ -1,7 +1,7 @@
 import datetime
 import logging
 from amitools.vamos.log import log_libmgr
-from amitools.vamos.atypes import Library
+from amitools.vamos.libtypes import Library
 from amitools.vamos.libcore import VLibManager
 from amitools.vamos.libnative import ALibManager, LibLoader
 from .cfg import LibCfg

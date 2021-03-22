@@ -8,7 +8,7 @@ from amitools.vamos.libcore import (
     LibCtxMap,
     LibProfiler,
 )
-from amitools.vamos.atypes import ExecLibrary
+from amitools.vamos.libtypes import ExecLibrary
 
 
 class VLibManager(object):

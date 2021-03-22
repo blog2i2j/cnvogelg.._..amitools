@@ -1,7 +1,5 @@
-from amitools.vamos.astructs import MessageStruct, MsgPortStruct
-from .atype import AmigaTypeWithName
-from .atypedef import AmigaTypeDef
-from .enum import EnumType
+from amitools.vamos.libstructs import MessageStruct, MsgPortStruct
+from amitools.vamos.atypes import AmigaTypeWithName, AmigaTypeDef, EnumType
 from .node import NodeType
 
 

@@ -1,5 +1,12 @@
-import collections
-from .astruct import AmigaStruct
+from .astruct import (
+    AmigaStruct,
+    AmigaStructTypes,
+    APTR_SELF,
+    BPTR_SELF,
+    TypeBase,
+    FieldDef,
+)
+from .pointer import APTR, BPTR
 
 
 class InvalidAmigaTypeException(Exception):
@@ -10,177 +17,78 @@ class InvalidAmigaTypeException(Exception):
         return self.type_name
 
 
-Field = collections.namedtuple(
-    "Field",
-    [
-        "type_sig",
-        "name",
-        "offset",
-        "size",
-        "end",
-        "struct_type",
-        "base_type",
-        "is_pointer",
-        "is_baddr",
-        "index",
-    ],
-)
-
-
 class AmigaStructDecorator(object):
     def decorate(self, cls):
-        name = self._validate_class(cls)
-        cls._type_name = name
-        # store struct pool and class
-        self.cls = cls
-        self.types = AmigaStruct._types
-        self.struct_pool = AmigaStruct._struct_pool
+        # check class and store base name (without Struct postfix)
+        type_name = self._validate_class(cls)
+        cls._type_name = type_name
         # setup field data
         self._setup_fields(cls)
-        # create data class
-        self._create_data_class(cls)
         # add to pool
-        self.struct_pool[name] = cls
+        AmigaStructTypes.add_struct(cls)
         return cls
-
-    def _create_data_class(self, cls):
-        names = cls._field_names
-        data_name = cls._type_name + "Data"
-        data_cls = collections.namedtuple(data_name, names)
-        cls._data_class = data_cls
 
     def _setup_fields(self, cls):
         total_size = 0
         offset = 0
-        name_to_field = {}
         index = 0
-        fields = []
-        names = []
-        my_name = cls._type_name
+        name_to_field_def = {}
+        field_defs = []
 
         # run through fields
-        for type_sig, name in self.cls._format:
+        for field_type, field_name in cls._format:
 
-            # check type signature
-            pure_name = self._validate_type_signature(my_name, type_sig)
+            # replace self pointers
+            if field_type is APTR_SELF:
+                field_type = APTR(cls)
+            elif field_type is BPTR_SELF:
+                field_type = BPTR(cls)
 
-            # calc size of field
-            size = self._lookup_type_size(type_sig)
+            # ensure correct format
+            if type(field_type) is not type or not issubclass(field_type, TypeBase):
+                raise RuntimeError(
+                    "invalid field: {}: {} in {}".format(
+                        field_name, field_type, cls.__name__
+                    )
+                )
 
-            # is pointer? struct type or base type?
-            is_pointer = self._is_pointer(type_sig)
-            struct_type = self._get_struct_type(pure_name)
-            base_type = self._get_base_type(pure_name)
-            is_baddr = self._is_baddr(base_type, type_sig)
-
-            # its my type
-            if pure_name == my_name:
-                struct_type = cls
-                if not is_pointer:
-                    raise RuntimeError("Can't embed myself in struct!")
+            field_size = field_type.get_byte_size()
+            if field_size is None:
+                raise RuntimeError(
+                    "invalid field: {}: {} in {}".format(
+                        field_name, field_type, cls.__name__
+                    )
+                )
 
             # create field
-            field = Field(
-                type_sig=type_sig,
-                name=name,
-                offset=offset,
-                size=size,
-                end=offset + size,
-                struct_type=struct_type,
-                base_type=base_type,
-                is_pointer=is_pointer,
-                is_baddr=is_baddr,
+            field_def = FieldDef(
                 index=index,
+                offset=offset,
+                type=field_type,
+                name=field_name,
+                size=field_size,
+                struct=cls,
             )
-            fields.append(field)
+            field_defs.append(field_def)
 
             # store name -> index mapping
-            name_to_field[name] = field
-            names.append(name)
+            name_to_field_def[field_name] = field_def
 
             # add name to class directly
-            field_name = name + "_field"
+            field_name = field_name + "_def"
             if getattr(cls, field_name, None) is not None:
-                raise RuntimeError("field '%s' already a member of class!" % name)
-            setattr(cls, field_name, field)
+                raise RuntimeError("field '%s' already a member of class!" % field_name)
+            setattr(cls, field_name, field_def)
 
             index += 1
-            offset += size
-            total_size += size
+            offset += field_size
+            total_size += field_size
 
         # store in class
-        cls._total_size = total_size
-        cls._fields = fields
-        cls._name_to_field = name_to_field
-        cls._field_names = names
+        cls._byte_size = total_size
+        cls._field_defs = field_defs
+        cls._name_to_field_def = name_to_field_def
         cls._num_fields = index
-
-    def _get_struct_type(self, pure_name):
-        if pure_name in self.struct_pool:
-            return self.struct_pool[pure_name]
-        else:
-            return None
-
-    def _get_base_type(self, pure_name):
-        if pure_name in self.types:
-            return self.types[pure_name]
-        else:
-            return None
-
-    def _lookup_type_size(self, full_type_name):
-        # array?
-        comp = full_type_name.split("|")
-        type_name = comp[0]
-        array_mult = 1
-        for m in comp[1:]:
-            array_mult *= int(m)
-
-        # its a pointer ;)
-        if self._is_pointer(type_name):
-            base = 4
-        # look for standard type
-        elif type_name in self.types:
-            base = 2 ** self.types[type_name][0]
-        # look for user type
-        elif type_name in self.struct_pool:
-            t = self.struct_pool[type_name]
-            base = t.get_size()
-        else:
-            raise InvalidAmigaTypeException(type_name)
-
-        return array_mult * base
-
-    def _is_pointer(self, name):
-        return name.find("*") != -1 or name.find("#") != -1
-
-    def _is_baddr(self, base_type, name):
-        if base_type:
-            return base_type[1]
-        elif name.find("#") != -1:
-            return True
-        else:
-            return False
-
-    def _validate_type_signature(self, my_name, type_sig):
-        type_name = self._get_pure_name(type_sig)
-        # its me
-        if type_name == my_name:
-            return type_name
-        # is it an internal type?
-        elif type_name in self.types:
-            return type_name
-        # a sub type?
-        elif type_name in self.struct_pool:
-            return type_name
-        else:
-            raise InvalidAmigaTypeException(type_name)
-
-    def _get_pure_name(self, name):
-        # remove array post fixes and pointers
-        comp = name.split("|")
-        type_name = comp[0].split("*")[0]
-        type_name = type_name.split("#")[0]
-        return type_name
 
     def _validate_class(self, cls):
         # make sure cls is derived from AmigaStruct

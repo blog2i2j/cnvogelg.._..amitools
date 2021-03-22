@@ -1,14 +1,12 @@
 import pytest
-from amitools.vamos.machine import MockMemory
 from amitools.vamos.machine.opcodes import op_rts
-from amitools.vamos.mem import MemoryAlloc
-from amitools.vamos.astructs import LibraryStruct
-from amitools.vamos.atypes import Library, CString, NodeType, LibFlags
+from amitools.vamos.libstructs import LibraryStruct
+from amitools.vamos.libtypes import Library, NodeType, LibFlags
 from amitools.vamos.label import LabelLib
 from amitools.fd import read_lib_fd
 
 
-def atypes_library_base_test(mem_alloc):
+def libtypes_library_base_test(mem_alloc):
     mem, alloc = mem_alloc
     # alloc lib
     name = "my.library"
@@ -54,7 +52,7 @@ def atypes_library_base_test(mem_alloc):
     assert alloc.is_all_free()
 
 
-def atypes_library_sum_test(mem_alloc):
+def libtypes_library_sum_test(mem_alloc):
     mem, alloc = mem_alloc
     # alloc lib
     name = "my.library"
@@ -77,7 +75,7 @@ def atypes_library_sum_test(mem_alloc):
     assert alloc.is_all_free()
 
 
-def atypes_libary_open_cnt_test(mem_alloc):
+def libtypes_libary_open_cnt_test(mem_alloc):
     mem, alloc = mem_alloc
     # alloc lib
     name = "my.library"
@@ -96,7 +94,7 @@ def atypes_libary_open_cnt_test(mem_alloc):
     assert alloc.is_all_free()
 
 
-def atypes_library_label_test(mem_alloc):
+def libtypes_library_label_test(mem_alloc):
     mem, alloc = mem_alloc
     name = "vamostest.library"
     id_str = "vamostest.library 0.1"

@@ -58,9 +58,6 @@ class AmigaType(object):
         else:
             return self.get_type_size()
 
-    def write_data(self):
-        return self._struct.write_data()
-
     @classmethod
     def init_from(cls, other):
         if isinstance(other, AmigaType):

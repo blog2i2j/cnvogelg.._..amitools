@@ -5,7 +5,7 @@ from amitools.vamos.libnative import ALibManager
 from amitools.vamos.loader import SegmentLoader
 from amitools.vamos.mem import MemoryAlloc
 from amitools.vamos.machine import Machine
-from amitools.vamos.atypes import ExecLibrary, Library
+from amitools.vamos.libtypes import ExecLibrary, Library
 
 
 def setup():

@@ -1,6 +1,6 @@
 from .makefuncs import MakeFuncs
 from .initstruct import InitStruct
-from amitools.vamos.atypes import Library
+from amitools.vamos.libtypes import Library
 from amitools.vamos.machine.regs import *
 
 

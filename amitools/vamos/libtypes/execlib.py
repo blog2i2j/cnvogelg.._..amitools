@@ -1,12 +1,10 @@
-from amitools.vamos.astructs import (
+from amitools.vamos.libstructs import (
     ExecLibraryStruct,
     SoftIntListStruct,
     IntVectorStruct,
 )
 from .library import Library
-from .atype import AmigaType
-from .atypedef import AmigaTypeDef
-from .bitfield import BitFieldType
+from amitools.vamos.atypes import AmigaType, AmigaTypeDef, BitFieldType
 from .node import NodeType
 from .task import Task
 

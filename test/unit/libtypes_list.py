@@ -1,7 +1,7 @@
 from amitools.vamos.machine import MockMemory
 from amitools.vamos.mem import MemoryAlloc
-from amitools.vamos.atypes import List, MinList, Node, NodeType, MinNode
-from amitools.vamos.astructs import ListStruct, MinListStruct
+from amitools.vamos.libtypes import List, MinList, Node, NodeType, MinNode
+from amitools.vamos.libstructs import ListStruct, MinListStruct
 
 
 def new_list():
@@ -18,21 +18,21 @@ def new_min_list():
     return l
 
 
-def atypes_list_new_test():
+def libtypes_list_new_test():
     l = new_list()
     assert str(l) == "[List:@000040,h=000044,t=000000,tp=000040,NT_DEVICE]"
     assert len(l) == 0
     assert [a for a in l] == []
 
 
-def atypes_list_min_new_test():
+def libtypes_list_min_new_test():
     l = new_min_list()
     assert str(l) == "[MinList:@000040,h=000044,t=000000,tp=000040]"
     assert len(l) == 0
     assert [a for a in l] == []
 
 
-def atypes_list_add_head_test():
+def libtypes_list_add_head_test():
     l = new_list()
     n1 = Node(l.mem, 0x50)
     assert len(l) == 0
@@ -45,7 +45,7 @@ def atypes_list_add_head_test():
     assert [a for a in l] == [n2, n1]
 
 
-def atypes_list_add_tail_test():
+def libtypes_list_add_tail_test():
     l = new_list()
     n1 = Node(l.mem, 0x50)
     assert len(l) == 0
@@ -58,7 +58,7 @@ def atypes_list_add_tail_test():
     assert [a for a in l] == [n1, n2]
 
 
-def atypes_list_rem_head_test():
+def libtypes_list_rem_head_test():
     l = new_list()
     n1 = Node(l.mem, 0x50)
     l.add_tail(n1)
@@ -75,7 +75,7 @@ def atypes_list_rem_head_test():
     assert len(l) == 0
 
 
-def atypes_list_rem_tail_test():
+def libtypes_list_rem_tail_test():
     l = new_list()
     n1 = Node(l.mem, 0x50)
     l.add_tail(n1)
@@ -92,7 +92,7 @@ def atypes_list_rem_tail_test():
     assert len(l) == 0
 
 
-def atypes_list_remove_node_test():
+def libtypes_list_remove_node_test():
     l = new_list()
     n1 = Node(l.mem, 0x50)
     l.add_tail(n1)
@@ -107,7 +107,7 @@ def atypes_list_remove_node_test():
     assert len(l) == 0
 
 
-def atypes_list_insert_node_test():
+def libtypes_list_insert_node_test():
     l = new_list()
     n1 = Node(l.mem, 0x50)
     l.add_tail(n1)
@@ -132,7 +132,7 @@ def atypes_list_insert_node_test():
     assert [a for a in l] == [n5, n1, n3, n2, n4]
 
 
-def atypes_list_enqueue_node_test():
+def libtypes_list_enqueue_node_test():
     l = new_list()
     n1 = Node(l.mem, 0x50)
     n1.set_pri(0)
@@ -159,7 +159,7 @@ def atypes_list_enqueue_node_test():
     assert [a for a in l] == [n3, n1, n2, n4]
 
 
-def atypes_list_iter_at_test():
+def libtypes_list_iter_at_test():
     l = new_list()
     n1 = Node(l.mem, 0x50)
     l.add_tail(n1)
@@ -184,7 +184,7 @@ def add_node(alist, addr, name):
     return n, addr
 
 
-def atypes_list_find_name_test():
+def libtypes_list_find_name_test():
     l = new_list()
     addr = 0x60
     n1, addr = add_node(l, addr, "hello")
@@ -204,7 +204,7 @@ def atypes_list_find_name_test():
     assert n.find_name("hello") == n3
 
 
-def atypes_list_alloc_test():
+def libtypes_list_alloc_test():
     mem = MockMemory()
     alloc = MemoryAlloc(mem)
     l = List.alloc(alloc)
@@ -213,7 +213,7 @@ def atypes_list_alloc_test():
     l.free()
 
 
-def atypes_list_alloc_min_test():
+def libtypes_list_alloc_min_test():
     mem = MockMemory()
     alloc = MemoryAlloc(mem)
     l = MinList.alloc(alloc)

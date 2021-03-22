@@ -3,7 +3,7 @@ from amitools.vamos.machine.regs import *
 from amitools.vamos.machine.opcodes import op_jmp
 from amitools.vamos.mem import MemoryAlloc
 from amitools.vamos.libnative import LibFuncs
-from amitools.vamos.atypes import ExecLibrary, Library, LibFlags
+from amitools.vamos.libtypes import ExecLibrary, Library, LibFlags
 from amitools.vamos.loader import SegList, SegmentLoader
 
 
