@@ -1,10 +1,10 @@
 from amitools.vamos.libstructs import MessageStruct, MsgPortStruct
-from amitools.vamos.atypes import AmigaTypeWithName, AmigaTypeDef, EnumType
+from amitools.vamos.atypes import AmigaTypeWithName, AmigaTypeDef, EnumType, Enum
 from .node import NodeType
 
 
 @EnumType
-class MsgPortFlags(object):
+class MsgPortFlags(Enum):
     PA_SIGNAL = 0
     PA_SOFTINT = 1
     PA_IGNORE = 2

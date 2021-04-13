@@ -5,6 +5,7 @@ from amitools.vamos.atypes import (
     BitFieldType,
     BitField,
     EnumType,
+    Enum,
     CString,
 )
 from .node import NodeType
@@ -21,7 +22,7 @@ class TaskFlags(BitField):
 
 
 @EnumType
-class TaskState(object):
+class TaskState(Enum):
     TS_INVALID = 0
     TS_ADDED = 1
     TS_RUN = 2

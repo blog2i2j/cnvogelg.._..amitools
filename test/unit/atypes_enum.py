@@ -1,10 +1,10 @@
 import pytest
-from amitools.vamos.atypes import EnumType
+from amitools.vamos.atypes import EnumType, Enum
 
 
 def atype_enum_test():
     @EnumType
-    class MyEnum:
+    class MyEnum(Enum):
         a = 3
         b = 4
         c = 0xFFFFFFFF

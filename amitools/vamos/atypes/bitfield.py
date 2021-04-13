@@ -2,8 +2,8 @@ import inspect
 
 
 class BitField:
-    _name_to_val = None # will be filled by decorator
-    _val_to_name = None # will be filled by decorator
+    _name_to_val = None  # will be filled by decorator
+    _val_to_name = None  # will be filled by decorator
 
     @classmethod
     def to_strs(cls, val, check=True):

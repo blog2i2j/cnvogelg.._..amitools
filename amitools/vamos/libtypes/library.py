@@ -2,7 +2,11 @@ from amitools.vamos.libstructs import LibraryStruct
 from amitools.vamos.label import LabelLib
 from amitools.vamos.machine.opcodes import op_rts
 from amitools.vamos.atypes import (
-    AmigaType, AmigaTypeDef, BitFieldType, BitField, CString
+    AmigaType,
+    AmigaTypeDef,
+    BitFieldType,
+    BitField,
+    CString,
 )
 from .node import NodeType
 

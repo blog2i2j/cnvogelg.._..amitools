@@ -1,4 +1,4 @@
-from .enum import EnumType
+from .enum import EnumType, Enum
 from .bitfield import BitFieldType, BitField
 from .cstring import CString
 from .bstring import BString

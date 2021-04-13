@@ -1,21 +1,11 @@
 import inspect
 
 
-def EnumType(cls):
-    """a class decorator that generates an enum class"""
+class Enum:
+    _name_to_val = None  # will be set by decorator
+    _val_to_name = None  # will be set by decorator
 
-    # collect integer vals
-    _name_to_val = {}
-    _val_to_name = {}
-    mem = inspect.getmembers(cls)
-    for name, val in mem:
-        if type(val) in (int, int):
-            _name_to_val[name] = val
-            _val_to_name[val] = name
-
-    cls._name_to_val = _name_to_val
-    cls._val_to_name = _val_to_name
-
+    @classmethod
     def to_str(cls, val, check=True):
         if val in cls._val_to_name:
             return cls._val_to_name[val]
@@ -24,13 +14,11 @@ def EnumType(cls):
         else:
             return str(val)
 
+    @classmethod
     def from_str(cls, name):
         if name in cls._name_to_val:
             return cls._name_to_val[name]
         raise ValueError("'%s' is an unknown Enum string" % name)
-
-    cls.to_str = classmethod(to_str)
-    cls.from_str = classmethod(from_str)
 
     def __init__(self, value):
         if type(value) is str:
@@ -51,7 +39,7 @@ def EnumType(cls):
         return self.value
 
     def __eq__(self, other):
-        if isinstance(other, cls):
+        if isinstance(other, self.__class__):
             return self.value == other.value
         elif type(other) is int:
             return self.value == other
@@ -61,11 +49,22 @@ def EnumType(cls):
     def get_value(self):
         return self.value
 
-    cls.__init__ = __init__
-    cls.__str__ = __str__
-    cls.__repr__ = __repr__
-    cls.__int__ = __int__
-    cls.__eq__ = __eq__
-    cls.get_value = get_value
+
+def EnumType(cls):
+    """a class decorator that generates an enum class"""
+
+    assert issubclass(cls, Enum)
+
+    # collect integer vals
+    _name_to_val = {}
+    _val_to_name = {}
+    mem = inspect.getmembers(cls)
+    for name, val in mem:
+        if type(val) in (int, int):
+            _name_to_val[name] = val
+            _val_to_name[val] = name
+
+    cls._name_to_val = _name_to_val
+    cls._val_to_name = _val_to_name
 
     return cls

@@ -4,12 +4,13 @@ from amitools.vamos.atypes import (
     AmigaTypeWithName,
     AmigaTypeDef,
     EnumType,
+    Enum,
     CString,
 )
 
 
 @EnumType
-class NodeType(object):
+class NodeType(Enum):
     """manage valid node type constants and conversions"""
 
     NT_UNKNOWN = 0
