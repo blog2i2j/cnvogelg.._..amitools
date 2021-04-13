@@ -1,23 +1,11 @@
 import inspect
 
 
-def BitFieldType(cls):
-    """a class decorator that generates a bit field class"""
+class BitField:
+    _name_to_val = None # will be filled by decorator
+    _val_to_name = None # will be filled by decorator
 
-    # collect integer vals
-    _name_to_val = {}
-    _val_to_name = {}
-    mem = inspect.getmembers(cls)
-    for name, val in mem:
-        if type(val) in (int, int):
-            # check that val is really a bit mask
-            if val & (val - 1) != 0:
-                raise ValueError("no bit mask in bit field: " % name)
-            _name_to_val[name] = val
-            _val_to_name[val] = name
-    cls._name_to_val = _name_to_val
-    cls._val_to_name = _val_to_name
-
+    @classmethod
     def to_strs(cls, val, check=True):
         res = []
         for bf_val in cls._val_to_name:
@@ -32,9 +20,11 @@ def BitFieldType(cls):
                 res.append(str(val))
         return res
 
+    @classmethod
     def to_str(cls, val, check=True):
         return "|".join(cls.to_strs(val, check))
 
+    @classmethod
     def from_strs(cls, *args):
         val = 0
         for name in args:
@@ -45,9 +35,11 @@ def BitFieldType(cls):
                 raise ValueError("invalid bit mask name: " + name)
         return val
 
+    @classmethod
     def from_str(cls, val):
         return cls.from_strs(*val.split("|"))
 
+    @classmethod
     def _get_bit_mask(cls, val):
         if type(val) is str:
             if val in cls._name_to_val:
@@ -62,21 +54,15 @@ def BitFieldType(cls):
         else:
             return val
 
+    @classmethod
     def is_set(cls, what, val):
         bmask = cls._get_bit_mask(what)
         return val & bmask == bmask
 
+    @classmethod
     def is_clr(cls, what, val):
         bmask = cls._get_bit_mask(what)
         return val & bmask == 0
-
-    cls.to_str = classmethod(to_str)
-    cls.from_str = classmethod(from_str)
-    cls.to_strs = classmethod(to_strs)
-    cls.from_strs = classmethod(from_strs)
-    cls._get_bit_mask = classmethod(_get_bit_mask)
-    cls.is_set = classmethod(is_set)
-    cls.is_clr = classmethod(is_clr)
 
     def __init__(self, *values):
         val = 0
@@ -95,7 +81,7 @@ def BitFieldType(cls):
         return self.value
 
     def __eq__(self, other):
-        if isinstance(other, cls):
+        if isinstance(other, self.__class__):
             return self.value == other.value
         elif type(other) is int:
             return self.value == other
@@ -117,14 +103,24 @@ def BitFieldType(cls):
     def get_value(self):
         return self.value
 
-    cls.__init__ = __init__
-    cls.__str__ = __str__
-    cls.__repr__ = __repr__
-    cls.__int__ = __int__
-    cls.__eq__ = __eq__
-    cls.get_value = get_value
-    cls.has_bits = has_bits
-    cls.set_bits = set_bits
-    cls.clr_bits = clr_bits
+
+def BitFieldType(cls):
+    """a class decorator that generates a bit field class"""
+
+    assert issubclass(cls, BitField)
+
+    # collect integer vals
+    _name_to_val = {}
+    _val_to_name = {}
+    mem = inspect.getmembers(cls)
+    for name, val in mem:
+        if type(val) in (int, int):
+            # check that val is really a bit mask
+            if val & (val - 1) != 0:
+                raise ValueError("no bit mask in bit field: " % name)
+            _name_to_val[name] = val
+            _val_to_name[val] = name
+    cls._name_to_val = _name_to_val
+    cls._val_to_name = _val_to_name
 
     return cls

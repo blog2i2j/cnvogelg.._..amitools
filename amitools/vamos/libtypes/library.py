@@ -1,12 +1,14 @@
 from amitools.vamos.libstructs import LibraryStruct
 from amitools.vamos.label import LabelLib
 from amitools.vamos.machine.opcodes import op_rts
-from amitools.vamos.atypes import AmigaType, AmigaTypeDef, BitFieldType, CString
+from amitools.vamos.atypes import (
+    AmigaType, AmigaTypeDef, BitFieldType, BitField, CString
+)
 from .node import NodeType
 
 
 @BitFieldType
-class LibFlags(object):
+class LibFlags(BitField):
     LIBF_SUMMING = 1 << 0
     LIBF_CHANGED = 1 << 1
     LIBF_SUMUSED = 1 << 2

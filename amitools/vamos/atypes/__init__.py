@@ -1,5 +1,5 @@
 from .enum import EnumType
-from .bitfield import BitFieldType
+from .bitfield import BitFieldType, BitField
 from .cstring import CString
 from .bstring import BString
 

@@ -4,13 +4,13 @@ from amitools.vamos.libstructs import (
     IntVectorStruct,
 )
 from .library import Library
-from amitools.vamos.atypes import AmigaType, AmigaTypeDef, BitFieldType
+from amitools.vamos.atypes import AmigaType, AmigaTypeDef, BitFieldType, BitField
 from .node import NodeType
 from .task import Task
 
 
 @BitFieldType
-class AttnFlags:
+class AttnFlags(BitField):
     AFF_68010 = 1 << 0
     AFF_68020 = 1 << 1
     AFF_68030 = 1 << 2

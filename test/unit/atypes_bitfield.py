@@ -1,10 +1,10 @@
 import pytest
-from amitools.vamos.atypes import BitFieldType
+from amitools.vamos.atypes import BitFieldType, BitField
 
 
 def atypes_bitfield_test():
     @BitFieldType
-    class MyBF:
+    class MyBF(BitField):
         a = 1
         b = 2
         c = 4

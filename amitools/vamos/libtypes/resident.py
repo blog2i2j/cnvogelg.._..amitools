@@ -1,11 +1,13 @@
 from amitools.vamos.libstructs import ResidentStruct, AutoInitStruct, LibraryStruct
 from amitools.vamos.mem import MemoryCache
-from amitools.vamos.atypes import AmigaType, AmigaTypeDef, BitFieldType, CString
+from amitools.vamos.atypes import (
+    AmigaType, AmigaTypeDef, BitFieldType, BitField, CString
+)
 from .node import NodeType
 
 
 @BitFieldType
-class ResidentFlags:
+class ResidentFlags(BitField):
     RTF_AUTOINIT = 1 << 7
     RTF_AFTERDOS = 1 << 2
     RTF_SINGLETASK = 1 << 1

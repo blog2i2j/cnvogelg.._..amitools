@@ -3,6 +3,7 @@ from amitools.vamos.atypes import (
     AmigaTypeWithName,
     AmigaTypeDef,
     BitFieldType,
+    BitField,
     EnumType,
     CString,
 )
@@ -10,7 +11,7 @@ from .node import NodeType
 
 
 @BitFieldType
-class TaskFlags(object):
+class TaskFlags(BitField):
     TF_PROCTIME = 1 << 0
     TF_ETASK = 1 << 3
     TF_STACKCHK = 1 << 4
