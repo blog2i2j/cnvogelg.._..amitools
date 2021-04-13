@@ -31,12 +31,7 @@ class ArrayType(TypeBase):
         return self.get_addr() + index * self._element_byte_size
 
     def __getitem__(self, key):
-        entry = self.get(key)
-        return entry.get()
-
-    def __setitem__(self, key, val):
-        entry = self.get(key)
-        entry.set(val)
+        return self.get(key)
 
 
 class ArrayIter:

@@ -23,9 +23,9 @@ def astructs_array_test():
     # signature
     assert a.get_signature() == "ULONG[10]"
     # access entry value
-    a[0] = 23
-    assert a[0] == 23
-    assert a.get(0).get() == 23
+    a[0].val = 23
+    assert a[0].val == 23
+    assert a.get(0).val == 23
 
 
 def astructs_array_iter_test():
