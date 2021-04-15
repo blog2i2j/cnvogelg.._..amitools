@@ -2,9 +2,9 @@ from .typebase import TypeBase
 from .pointer import APTR, BPTR
 
 
-class StringType(TypeBase):
+class CStringType(TypeBase):
     def __init__(self, mem, addr, **kwargs):
-        super(StringType, self).__init__(mem, addr, **kwargs)
+        super(CStringType, self).__init__(mem, addr, **kwargs)
 
     def get(self):
         if self._addr == 0:
@@ -21,12 +21,12 @@ class StringType(TypeBase):
     def __getattr__(self, key):
         if key == "str":
             return self.get()
-        return super(StringType, self).__getattr__(key)
+        return super(CStringType, self).__getattr__(key)
 
     def __setattr__(self, key, val):
         if key == "str":
             self.set(val)
-        super(StringType, self).__setattr__(key, val)
+        super(CStringType, self).__setattr__(key, val)
 
     def __eq__(self, other):
         # compare against other string
@@ -35,7 +35,7 @@ class StringType(TypeBase):
         elif other is None:
             return self.get() is None
         else:
-            super(StringType, self).__eq__(other)
+            super(CStringType, self).__eq__(other)
 
     @classmethod
     def alloc_inst(self, alloc, tag, txt):
@@ -48,9 +48,9 @@ class StringType(TypeBase):
         alloc.free_cstr(mem_obj)
 
 
-class BCPLStringType(TypeBase):
+class BStringType(TypeBase):
     def __init__(self, mem, addr, **kwargs):
-        super(BCPLStringType, self).__init__(mem, addr, **kwargs)
+        super(BStringType, self).__init__(mem, addr, **kwargs)
 
     def get(self):
         if self._addr == 0:
@@ -67,12 +67,12 @@ class BCPLStringType(TypeBase):
     def __getattr__(self, key):
         if key == "str":
             return self.get()
-        return super(BCPLStringType, self).__getattr__(key)
+        return super(BStringType, self).__getattr__(key)
 
     def __setattr__(self, key, val):
         if key == "str":
             self.set(val)
-        super(BCPLStringType, self).__setattr__(key, val)
+        super(BStringType, self).__setattr__(key, val)
 
     def __eq__(self, other):
         # compare against other string
@@ -81,7 +81,7 @@ class BCPLStringType(TypeBase):
         elif other is None:
             return self.get() is None
         else:
-            super(BCPLStringType, self).__eq__(other)
+            super(BStringType, self).__eq__(other)
 
     @classmethod
     def alloc_inst(self, alloc, tag, txt):
@@ -94,7 +94,7 @@ class BCPLStringType(TypeBase):
         alloc.free_bstr(mem_obj)
 
 
-class CSTR(APTR(StringType)):
+class CSTR(APTR(CStringType)):
     @classmethod
     def get_signature(cls):
         return "CSTR"
@@ -122,7 +122,7 @@ class CSTR(APTR(StringType)):
         super(CSTR, self).__setattr__(key, val)
 
 
-class BSTR(BPTR(BCPLStringType)):
+class BSTR(BPTR(BStringType)):
     @classmethod
     def get_signature(cls):
         return "BSTR"
