@@ -25,6 +25,29 @@ class PointerType(TypeBase):
         super(PointerType, self).__init__(mem, addr, cpu, reg, **kwargs)
         self._ref = None
         self._ref_addr = None
+        # state if pointer ref was allocated
+        self._alloc = None
+        self._mem_obj = None
+
+    def alloc(self, alloc, *args, tag=None):
+        # make sure nothing is allocated yet
+        assert self._ref is None and self._mem_obj is None
+        mem_obj = self._ref_type.alloc_inst(alloc, tag, *args)
+        if mem_obj is None:
+            return None
+        self._alloc = alloc
+        self._mem_obj = mem_obj
+        self._write_pointer(mem_obj.addr)
+        return self.ref()
+
+    def free(self):
+        assert self._ref and self._mem_obj
+        self._ref.free_inst(self._alloc, self._mem_obj)
+        self._ref = None
+        self._ref_addr = 0
+        self._write_pointer(0)
+        self._mem_obj = None
+        self._alloc = None
 
     def ref(self):
         """return the referenced type instance"""
@@ -37,6 +60,8 @@ class PointerType(TypeBase):
     def set_ref(self, ref):
         """set a new type instance"""
         assert isinstance(ref, self._ref_type)
+        if self._mem_obj is not None:
+            raise RuntimeError("Can't change alloc'ed pointer!")
         self._ref = ref
         if not ref:
             self._ref_addr = 0

@@ -37,6 +37,16 @@ class StringType(TypeBase):
         else:
             super(StringType, self).__eq__(other)
 
+    @classmethod
+    def alloc_inst(self, alloc, tag, txt):
+        if tag is None:
+            tag = "CString('%s')" % txt
+        return alloc.alloc_cstr(tag, txt)
+
+    @classmethod
+    def free_inst(self, alloc, mem_obj):
+        alloc.free_cstr(mem_obj)
+
 
 class BCPLStringType(TypeBase):
     def __init__(self, mem, addr, **kwargs):
@@ -53,6 +63,35 @@ class BCPLStringType(TypeBase):
             raise ValueError("Can't set BNULL string!")
         else:
             self._mem.w_bstr(self._addr, val)
+
+    def __getattr__(self, key):
+        if key == "str":
+            return self.get()
+        return super(BCPLStringType, self).__getattr__(key)
+
+    def __setattr__(self, key, val):
+        if key == "str":
+            self.set(val)
+        super(BCPLStringType, self).__setattr__(key, val)
+
+    def __eq__(self, other):
+        # compare against other string
+        if type(other) is str:
+            return self.get() == other
+        elif other is None:
+            return self.get() is None
+        else:
+            super(BCPLStringType, self).__eq__(other)
+
+    @classmethod
+    def alloc_inst(self, alloc, tag, txt):
+        if tag is None:
+            tag = "BString('%s')" % txt
+        return alloc.alloc_bstr(tag, txt)
+
+    @classmethod
+    def free_inst(self, alloc, mem_obj):
+        alloc.free_bstr(mem_obj)
 
 
 class CSTR(APTR(StringType)):

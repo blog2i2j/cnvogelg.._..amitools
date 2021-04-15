@@ -1,9 +1,11 @@
 from amitools.vamos.astructs.typebase import TypeBase
 from amitools.vamos.astructs.string import CSTR, BSTR
 from amitools.vamos.machine import MockMemory, MockCPU, REG_D0
+from amitools.vamos.mem import MemoryAlloc
 
 cpu = MockCPU()
 mem = MockMemory()
+alloc = MemoryAlloc(mem)
 
 
 def astructs_string_cstr_test():
@@ -31,8 +33,10 @@ def astructs_string_cstr_test():
 
 
 def astructs_string_cstr_null_test():
+    mem.w32(0, 0)
     cstr = CSTR(mem=mem, addr=0)
     assert cstr.str is None
+    mem.w32(4, 0)
     cstr2 = CSTR(mem=mem, addr=4)
     assert cstr2.str is None
     assert cstr != cstr2
@@ -50,6 +54,22 @@ def astructs_string_cstr_compare_test():
     assert cstr == cstr2
     cstr3 = CSTR(mem=mem, addr=0x24)
     assert cstr != cstr3
+
+
+def astructs_string_cstr_alloc_test():
+    mem.w32(0x20, 0)
+    cstr = CSTR(mem=mem, addr=0x20)
+    assert cstr.str is None
+    assert cstr.aptr == 0
+    txt = "hello, world!"
+    res = cstr.alloc(alloc, txt)
+    assert res is not None
+    assert cstr.str == txt
+    assert cstr.aptr != 0
+    assert mem.r_cstr(cstr.aptr) == txt
+    cstr.free()
+    assert cstr.str is None
+    assert cstr.aptr == 0
 
 
 def astructs_string_bstr_test():
@@ -77,8 +97,10 @@ def astructs_string_bstr_test():
 
 
 def astructs_string_bstr_null_test():
+    mem.w32(0, 0)
     bstr = BSTR(mem=mem, addr=0)
     assert bstr.str is None
+    mem.w32(4, 0)
     bstr2 = BSTR(mem=mem, addr=4)
     assert bstr2.str is None
     assert bstr != bstr2
@@ -97,3 +119,19 @@ def astructs_string_cstr_compare_test():
     assert bstr == bstr2
     cstr3 = BSTR(mem=mem, addr=0x24)
     assert bstr != cstr3
+
+
+def astructs_string_bstr_alloc_test():
+    mem.w32(0x20, 0)
+    bstr = BSTR(mem=mem, addr=0x20)
+    assert bstr.str is None
+    assert bstr.aptr == 0
+    txt = "hello, world!"
+    res = bstr.alloc(alloc, txt)
+    assert res is not None
+    assert bstr.str == txt
+    assert bstr.aptr != 0
+    assert mem.r_bstr(bstr.aptr) == txt
+    bstr.free()
+    assert bstr.str is None
+    assert bstr.aptr == 0
