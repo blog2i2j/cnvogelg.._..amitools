@@ -30,6 +30,28 @@ def astructs_string_cstr_test():
     assert cstr.str == "now!"
 
 
+def astructs_string_cstr_null_test():
+    cstr = CSTR(mem=mem, addr=0)
+    assert cstr.str is None
+    cstr2 = CSTR(mem=mem, addr=4)
+    assert cstr2.str is None
+    assert cstr != cstr2
+
+
+def astructs_string_cstr_compare_test():
+    txt = "hello, world!"
+    mem.w32(0x20, 0x40)
+    mem.w_cstr(0x40, txt)
+    cstr = CSTR(mem=mem, addr=0x20)
+    assert cstr == 0x20
+    assert cstr.aptr == 0x40
+    assert cstr.str == txt
+    cstr2 = CSTR(mem=mem, addr=0x20)
+    assert cstr == cstr2
+    cstr3 = CSTR(mem=mem, addr=0x24)
+    assert cstr != cstr3
+
+
 def astructs_string_bstr_test():
     # prepare mem
     txt = "hello, world!"
@@ -52,3 +74,26 @@ def astructs_string_bstr_test():
     # access via 'str'
     bstr.str = "now!"
     assert bstr.str == "now!"
+
+
+def astructs_string_bstr_null_test():
+    bstr = BSTR(mem=mem, addr=0)
+    assert bstr.str is None
+    bstr2 = BSTR(mem=mem, addr=4)
+    assert bstr2.str is None
+    assert bstr != bstr2
+
+
+def astructs_string_cstr_compare_test():
+    txt = "hello, world!"
+    mem.w32(0x20, 0x10)
+    mem.w_bstr(0x40, txt)
+    bstr = BSTR(mem=mem, addr=0x20)
+    assert bstr == 0x20
+    assert bstr.aptr == 0x40
+    assert bstr.bptr == 0x10
+    assert bstr.str == txt
+    bstr2 = BSTR(mem=mem, addr=0x20)
+    assert bstr == bstr2
+    cstr3 = BSTR(mem=mem, addr=0x24)
+    assert bstr != cstr3
