@@ -1,4 +1,5 @@
 from amitools.vamos.machine import MockMemory
+from amitools.vamos.mem import MemoryAlloc
 from amitools.vamos.astructs import (
     AmigaStruct,
     AmigaStructDef,
@@ -32,7 +33,7 @@ class SubStruct(AmigaStruct):
     # = 32
 
 
-def astruct_astruct_base_class_test():
+def astructs_astruct_base_class_test():
     # check class members
     assert MyStruct.get_type_name() == "My"
     assert MyStruct.get_byte_size() == 12
@@ -62,7 +63,7 @@ def astruct_astruct_base_class_test():
     assert MyStruct.get_signature() == "My"
 
 
-def astruct_astruct_base_inst_test():
+def astructs_astruct_base_inst_test():
     # check instance
     mem = MockMemory()
     ms = MyStruct(mem, 0x10)
@@ -84,7 +85,7 @@ def astruct_astruct_base_inst_test():
     assert ms.ms_Word.get() == 2000
 
 
-def astruct_astruct_sub_struct_test():
+def astructs_astruct_sub_struct_test():
     # check class
     assert SubStruct.get_type_name() == "Sub"
     assert SubStruct.get_byte_size() == 32
@@ -157,7 +158,7 @@ def astruct_astruct_sub_struct_test():
     assert ss.ss_My2.ms_Pad.base_offset == 22
 
 
-def astruct_astruct_baddr_test():
+def astructs_astruct_baddr_test():
     mem = MockMemory()
     ms = MyStruct(mem, 0x10)
     # write int to baddr
@@ -169,3 +170,16 @@ def astruct_astruct_baddr_test():
     # write baddr
     ms.ms_SegList.set(0x20)
     assert mem.r32(0x14) == 0x20
+
+
+def astructs_astruct_alloc_test():
+    mem = MockMemory()
+    alloc = MemoryAlloc(mem)
+    MyStructPtr = APTR(MyStruct)
+    ptr = MyStructPtr(mem, 0x10)
+    assert ptr.aptr == 0
+    res = ptr.alloc(alloc)
+    assert type(res) is MyStruct
+    assert ptr.aptr != 0
+    ptr.free()
+    assert ptr.aptr == 0

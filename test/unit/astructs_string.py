@@ -1,5 +1,5 @@
 from amitools.vamos.astructs.typebase import TypeBase
-from amitools.vamos.astructs.string import CSTR, BSTR
+from amitools.vamos.astructs.string import CSTR, BSTR, CStringType, BStringType
 from amitools.vamos.machine import MockMemory, MockCPU, REG_D0
 from amitools.vamos.mem import MemoryAlloc
 
@@ -64,6 +64,7 @@ def astructs_string_cstr_alloc_test():
     txt = "hello, world!"
     res = cstr.alloc(alloc, txt)
     assert res is not None
+    assert type(res) is CStringType
     assert cstr.str == txt
     assert cstr.aptr != 0
     assert mem.r_cstr(cstr.aptr) == txt
@@ -129,6 +130,7 @@ def astructs_string_bstr_alloc_test():
     txt = "hello, world!"
     res = bstr.alloc(alloc, txt)
     assert res is not None
+    assert type(res) is BStringType
     assert bstr.str == txt
     assert bstr.aptr != 0
     assert mem.r_bstr(bstr.aptr) == txt

@@ -165,6 +165,16 @@ class AmigaStruct(TypeBase):
                 cur_cls = field_def.type
         return field_defs
 
+    @classmethod
+    def alloc_inst(cls, alloc, tag=None):
+        if tag is None:
+            tag = cls.get_signature()
+        return alloc.alloc_struct(tag, cls)
+
+    @classmethod
+    def free_inst(cls, alloc, mem_obj):
+        alloc.free_struct(mem_obj)
+
     # ----- instance -----
 
     def __init__(self, mem, addr, **kwargs):

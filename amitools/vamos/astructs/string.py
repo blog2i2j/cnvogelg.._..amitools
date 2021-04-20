@@ -84,13 +84,13 @@ class BStringType(TypeBase):
             super(BStringType, self).__eq__(other)
 
     @classmethod
-    def alloc_inst(self, alloc, txt, tag=None):
+    def alloc_inst(cls, alloc, txt, tag=None):
         if tag is None:
             tag = "BString('%s')" % txt
         return alloc.alloc_bstr(tag, txt)
 
     @classmethod
-    def free_inst(self, alloc, mem_obj):
+    def free_inst(cls, alloc, mem_obj):
         alloc.free_bstr(mem_obj)
 
 
