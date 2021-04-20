@@ -38,7 +38,7 @@ class CStringType(TypeBase):
             super(CStringType, self).__eq__(other)
 
     @classmethod
-    def alloc_inst(self, alloc, tag, txt):
+    def alloc_inst(self, alloc, txt, tag=None):
         if tag is None:
             tag = "CString('%s')" % txt
         return alloc.alloc_cstr(tag, txt)
@@ -84,7 +84,7 @@ class BStringType(TypeBase):
             super(BStringType, self).__eq__(other)
 
     @classmethod
-    def alloc_inst(self, alloc, tag, txt):
+    def alloc_inst(self, alloc, txt, tag=None):
         if tag is None:
             tag = "BString('%s')" % txt
         return alloc.alloc_bstr(tag, txt)

@@ -32,7 +32,7 @@ class PointerType(TypeBase):
     def alloc(self, alloc, *args, tag=None):
         # make sure nothing is allocated yet
         assert self._ref is None and self._mem_obj is None
-        mem_obj = self._ref_type.alloc_inst(alloc, tag, *args)
+        mem_obj = self._ref_type.alloc_inst(alloc, *args, tag=tag)
         if mem_obj is None:
             return None
         self._alloc = alloc
