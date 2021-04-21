@@ -20,7 +20,7 @@ class AmigaStructPool:
 
     def add_struct(self, cls):
         assert issubclass(cls, AmigaStruct)
-        type_name = cls._type_name
+        type_name = cls.sdef.get_type_name()
         if not type_name in self._pool:
             self._pool[type_name] = cls
 
@@ -63,7 +63,7 @@ class FieldDef(FieldDefBase):
     def get_sub_field_by_name(self, name):
         # only works for astructs
         if issubclass(self.type, AmigaStruct):
-            sub_field = getattr(self.type, name)
+            sub_field = getattr(self.type.sdef, name)
             return sub_field
 
     def __getattr__(self, name):
@@ -85,53 +85,58 @@ class FieldDef(FieldDefBase):
             raise AttributeError(name)
 
 
-class AmigaStruct(TypeBase):
+class AmigaStructFieldDefs:
+    def __init__(self, type_name):
+        self._type_name = type_name
+        self._field_defs = []
+        self._name_to_field_def = {}
+        self._total_size = 0
 
-    # overwrite in derived class!
-    _format = None
-    # these values are filled by the decorator
-    _type_name = None
-    _field_defs = None
-    _name_to_field_def = None
+    def get_num_field_defs(self):
+        return len(self._field_defs)
 
-    @classmethod
-    def get_type_name(cls):
-        return cls._type_name
+    def get_total_size(self):
+        return self._total_size
 
-    @classmethod
-    def get_signature(cls):
-        return cls._type_name
+    def add_field_def(self, field_def):
+        self._field_defs.append(field_def)
+        self._name_to_field_def[field_def.name] = field_def
+        self._total_size += field_def.size
 
-    @classmethod
-    def get_field_defs(cls):
-        return cls._field_defs
+    def get_type_name(self):
+        return self._type_name
 
-    @classmethod
-    def get_field_def(cls, idx):
-        return cls._field_defs[idx]
+    def get_field_defs(self):
+        return self._field_defs
 
-    @classmethod
-    def find_field_def_by_name(cls, name):
-        return cls._name_to_field_def.get(name)
+    def get_field_def(self, idx):
+        return self._field_defs[idx]
 
-    @classmethod
-    def find_field_def_by_offset(cls, offset):
+    def __getitem__(self, key):
+        return self._field_defs[key]
+
+    def find_field_def_by_name(self, name):
+        return self._name_to_field_def.get(name)
+
+    def __getattr__(self, name):
+        return self._name_to_field_def.get(name)
+
+    def find_field_def_by_offset(self, offset):
         """return field_def, delta that matches offset, otherwise None, 0"""
-        for f in cls._field_defs:
+        for f in self._field_defs:
             end = f.offset + f.size
             if offset >= f.offset and offset < end:
                 delta = offset - f.offset
                 return f, delta
         return None, 0
 
-    @classmethod
-    def find_sub_field_defs_by_offset(cls, base_offset):
+    def find_sub_field_defs_by_offset(self, base_offset):
         """return array with field_def leading to embedded struct field at offset
 
         return [field_defs], delta or None, 0
         """
         field_defs = []
-        cur_cls = cls
+        cur_cls = self
         offset = base_offset
         while True:
             field_def, delta = cur_cls.find_field_def_by_offset(offset)
@@ -143,16 +148,15 @@ class AmigaStruct(TypeBase):
                 break
             # new search
             offset -= field_def.offset
-            cur_cls = field_def.type
+            cur_cls = field_def.type.sdef
         return field_defs, delta
 
-    @classmethod
-    def find_sub_field_defs_by_name(cls, *names):
+    def find_sub_field_defs_by_name(self, *names):
         """return array with field_defs or None"""
         if not names:
             return None
         field_defs = []
-        cur_cls = cls
+        cur_cls = self
         for name in names:
             if not cur_cls:
                 return None
@@ -162,8 +166,20 @@ class AmigaStruct(TypeBase):
             field_defs.append(field_def)
             # next sub class
             if issubclass(field_def.type, AmigaStruct):
-                cur_cls = field_def.type
+                cur_cls = field_def.type.sdef
         return field_defs
+
+
+class AmigaStruct(TypeBase):
+
+    # overwrite in derived class!
+    _format = None
+    # the structure definition is filled in by the decorator
+    sdef = None
+
+    @classmethod
+    def get_signature(cls):
+        return cls.sdef.get_type_name()
 
     @classmethod
     def alloc_inst(cls, alloc, tag=None):
@@ -182,7 +198,7 @@ class AmigaStruct(TypeBase):
         # create field instances
         fields = []
         name_to_field = {}
-        for field_def in self._field_defs:
+        for field_def in self.sdef.get_field_defs():
             field = self._create_field_type(field_def)
             fields.append(field)
             name_to_field[field_def.name] = field
@@ -191,7 +207,7 @@ class AmigaStruct(TypeBase):
 
     def __str__(self):
         return "[AStruct:%s,@%06x+%06x]" % (
-            self._type_name,
+            self.sdef.get_type_name(),
             self._addr,
             self._byte_size,
         )
@@ -206,7 +222,7 @@ class AmigaStruct(TypeBase):
 
     def find_field_by_offset(self, offset):
         """return field, delta or None, 0"""
-        field_def, delta = self.find_field_def_by_offset(offset)
+        field_def, delta = self.sdef.find_field_def_by_offset(offset)
         if not field_def:
             return None, 0
         return self._fields[field_def.index], delta
@@ -232,7 +248,7 @@ class AmigaStruct(TypeBase):
     def find_field_def_by_addr(self, addr):
         """return field, delta or None, 0"""
         offset = addr - self._addr
-        return self.find_field_def_by_offset(offset)
+        return self.sdef.find_field_def_by_offset(offset)
 
     def find_field_by_addr(self, addr):
         """return field, delta or None, 0"""

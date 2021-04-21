@@ -485,7 +485,7 @@ class DosLibrary(LibImpl):
         log_dos.info("FindSegment(%s)" % needle)
         while seg_addr != 0:
             segment = AccessStruct(ctx.mem, SegmentStruct, seg_addr)
-            name_addr = seg_addr + SegmentStruct.seg_Name_def.offset
+            name_addr = seg_addr + SegmentStruct.sdef.seg_Name.offset
             name = ctx.mem.r_bstr(name_addr)
             if name.lower() == needle.lower():
                 if (system and segment.r_s("seg_UC") < 0) or (
@@ -503,7 +503,7 @@ class DosLibrary(LibImpl):
         system = ctx.cpu.r_reg(REG_D3)
         name = ctx.mem.r_cstr(name_ptr)
         seg_addr = self._alloc_mem("Segment", SegmentStruct.get_size() + len(name) + 1)
-        name_addr = seg_addr + SegmentStruct.seg_Name_def.offset
+        name_addr = seg_addr + SegmentStruct.sdef.seg_Name.offset
         segment = ctx.alloc.map_struct("Segment", seg_addr, SegmentStruct)
         head_addr = self.dos_info.access.r_s("di_NetHand")
         segment.access.w_s("seg_Next", head_addr)

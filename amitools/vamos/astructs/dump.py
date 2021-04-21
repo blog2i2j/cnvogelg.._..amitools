@@ -23,7 +23,7 @@ class TypeDumper:
         # first print enclosing structure
         field_def = field_defs[0]
         struct = field_def.struct
-        self._print_begin_struct(struct._type_name)
+        self._print_begin_struct(struct.sdef.get_type_name())
         self._indent += 1
         self._dump_fields(field_defs, 0)
         self._indent -= 1
@@ -36,7 +36,7 @@ class TypeDumper:
         self._offset += field_def.offset
         self._base_addr += field_def.offset
         if issubclass(field_type, AmigaStruct):
-            self._print_begin_struct(field_type._type_name, field_def.name)
+            self._print_begin_struct(field_type.sdef.get_type_name(), field_def.name)
             if pos < len(field_defs) - 1:
                 self._indent += 1
                 self._dump_fields(field_defs, pos + 1)
@@ -46,13 +46,13 @@ class TypeDumper:
             self._print_field(field_def)
 
     def _dump_struct(self, type_cls, struct_field_def=None):
-        type_name = type_cls._type_name
+        type_name = type_cls.sdef.get_type_name()
         byte_size = type_cls.get_byte_size()
         field_name = struct_field_def.name if struct_field_def else None
         self._print_begin_struct(type_name, field_name)
         self._indent += 1
 
-        for field_def in type_cls.get_field_defs():
+        for field_def in type_cls.sdef.get_field_defs():
             field_type = field_def.type
             if issubclass(field_type, AmigaStruct):
                 self._dump_struct(field_type, field_def)

@@ -41,7 +41,7 @@ class AccessStruct(object):
         # walk along fields in name "bla.foo.bar"
         for field_name in name.split("."):
             assert struct
-            field_def = struct.find_field_def_by_name(field_name)
+            field_def = struct.sdef.find_field_def_by_name(field_name)
             if not field_def:
                 raise KeyError(self, name)
             field = struct.get_field_by_index(field_def.index)

@@ -54,7 +54,7 @@ class TypeTool(Tool):
             else:
                 field_path = args.type_field_path
                 field_names = field_path.split(".")
-                field_defs = s.find_sub_field_defs_by_name(*field_names)
+                field_defs = s.sdef.find_sub_field_defs_by_name(*field_names)
                 if field_defs:
                     td = TypeDumper()
                     td.dump_fields(*field_defs)
@@ -71,7 +71,7 @@ class TypeTool(Tool):
                 return 1
             else:
                 offset = parse_scalar(int, args.type_offset)
-                field_defs, delta = s.find_sub_field_defs_by_offset(offset)
+                field_defs, delta = s.sdef.find_sub_field_defs_by_offset(offset)
                 if field_defs:
                     td = TypeDumper()
                     td.dump_fields(*field_defs)

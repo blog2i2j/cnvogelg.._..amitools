@@ -169,8 +169,8 @@ class TraceManager(object):
         if offset >= 0 and offset < label.struct_size:
             # find sub fields and delta
             struct = label.struct
-            sub_field_defs, delta = label.struct.find_sub_field_defs_by_offset(offset)
-            type_name = struct.get_type_name()
+            sub_field_defs, delta = label.struct.sdef.find_sub_field_defs_by_offset(offset)
+            type_name = struct.sdef.get_type_name()
             name = ".".join(map(lambda x: x.name, sub_field_defs))
             type_sig = sub_field_defs[-1].type.get_signature()
             addon = "%s+%d = %s(%s)+%d" % (type_name, offset, name, type_sig, delta)

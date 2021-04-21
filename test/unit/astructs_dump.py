@@ -83,7 +83,7 @@ def astructs_dump_type_struct_test():
 
 
 def astructs_dump_fields_test():
-    assert dump_fields(SubStruct.ss_My_def, MyStruct.ms_Pad_def) == [
+    assert dump_fields(SubStruct.sdef.ss_My, MyStruct.sdef.ms_Pad) == [
         "     @0000         Sub {",
         "     @0000          My ss_My {",
         "#0001 0000 @0002/0002 +0002     UWORD                ms_Pad              ",

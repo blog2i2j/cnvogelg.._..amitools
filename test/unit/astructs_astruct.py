@@ -35,30 +35,30 @@ class SubStruct(AmigaStruct):
 
 def astructs_astruct_base_class_test():
     # check class members
-    assert MyStruct.get_type_name() == "My"
+    assert MyStruct.sdef.get_type_name() == "My"
     assert MyStruct.get_byte_size() == 12
     # get field defs
-    field_defs = MyStruct.get_field_defs()
+    field_defs = MyStruct.sdef.get_field_defs()
     assert field_defs
     assert len(field_defs) == 4
     # get one field
-    field_def = MyStruct.get_field_def(0)
+    field_def = MyStruct.sdef.get_field_def(0)
     assert field_def.name == "ms_Word"
     # find by name
-    ms_Word = MyStruct.find_field_def_by_name("ms_Word")
-    assert MyStruct.ms_Word_def == ms_Word
-    res = MyStruct.find_sub_field_defs_by_name("ms_Word")
+    ms_Word = MyStruct.sdef.find_field_def_by_name("ms_Word")
+    assert MyStruct.sdef.ms_Word == ms_Word
+    res = MyStruct.sdef.find_sub_field_defs_by_name("ms_Word")
     assert res == [ms_Word]
     # offset of fields
-    fd, delta = MyStruct.find_field_def_by_offset(4)
+    fd, delta = MyStruct.sdef.find_field_def_by_offset(4)
     assert fd.name == "ms_SegList"
     assert delta == 0
-    fd, delta = MyStruct.find_field_def_by_offset(3)
+    fd, delta = MyStruct.sdef.find_field_def_by_offset(3)
     assert fd.name == "ms_Pad"
     assert delta == 1
     # offset/base offset of fields
-    assert MyStruct.ms_Pad_def.offset == 2
-    assert MyStruct.ms_Pad_def.base_offset == 2
+    assert MyStruct.sdef.ms_Pad.offset == 2
+    assert MyStruct.sdef.ms_Pad.base_offset == 2
     # signature
     assert MyStruct.get_signature() == "My"
 
@@ -76,7 +76,7 @@ def astructs_astruct_base_inst_test():
     assert ms.get("ms_Word") == field
     assert ms.find_field_by_offset(0) == (field, 0)
     assert ms.find_field_by_addr(0x10) == (field, 0)
-    assert ms.find_field_def_by_addr(0x10) == (ms.get_field_def(0), 0)
+    assert ms.find_field_def_by_addr(0x10) == (ms.sdef[0], 0)
     # access
     ms.get("ms_Word").set(-3000)
     assert ms.get("ms_Word").get() == -3000
@@ -87,35 +87,35 @@ def astructs_astruct_base_inst_test():
 
 def astructs_astruct_sub_struct_test():
     # check class
-    assert SubStruct.get_type_name() == "Sub"
+    assert SubStruct.sdef.get_type_name() == "Sub"
     assert SubStruct.get_byte_size() == 32
-    assert len(SubStruct.get_field_defs()) == 4
-    field_defs = SubStruct.get_field_defs()
+    assert len(SubStruct.sdef.get_field_defs()) == 4
+    field_defs = SubStruct.sdef.get_field_defs()
     field_names = list(map(lambda x: x.name, field_defs))
     assert field_names == ["ss_My", "ss_MyPtr", "ss_SubPtr", "ss_My2"]
     # find by name
-    assert SubStruct.find_field_def_by_name("ss_My")
-    res = SubStruct.find_sub_field_defs_by_name("ss_My", "ms_Pad")
-    assert res == [SubStruct.ss_My_def, MyStruct.ms_Pad_def]
-    assert SubStruct.find_sub_field_defs_by_name("ss_My", "Foo") is None
-    assert SubStruct.find_sub_field_defs_by_name("ss_SubPtr", "Foo") is None
+    assert SubStruct.sdef.find_field_def_by_name("ss_My")
+    res = SubStruct.sdef.find_sub_field_defs_by_name("ss_My", "ms_Pad")
+    assert res == [SubStruct.sdef.ss_My, MyStruct.sdef.ms_Pad]
+    assert SubStruct.sdef.find_sub_field_defs_by_name("ss_My", "Foo") is None
+    assert SubStruct.sdef.find_sub_field_defs_by_name("ss_SubPtr", "Foo") is None
     # field defs
-    assert SubStruct.find_field_def_by_offset(3) == (SubStruct.ss_My_def, 3)
-    assert SubStruct.find_field_def_by_offset(23) == (SubStruct.ss_My2_def, 3)
+    assert SubStruct.sdef.find_field_def_by_offset(3) == (SubStruct.sdef.ss_My, 3)
+    assert SubStruct.sdef.find_field_def_by_offset(23) == (SubStruct.sdef.ss_My2, 3)
     # find sub field defs
-    sub_fds = SubStruct.find_sub_field_defs_by_offset(3)
-    assert sub_fds == ([SubStruct.ss_My_def, MyStruct.ms_Pad_def], 1)
-    sub_fds = SubStruct.find_sub_field_defs_by_offset(23)
-    assert sub_fds == ([SubStruct.ss_My2_def, MyStruct.ms_Pad_def], 1)
+    sub_fds = SubStruct.sdef.find_sub_field_defs_by_offset(3)
+    assert sub_fds == ([SubStruct.sdef.ss_My, MyStruct.sdef.ms_Pad], 1)
+    sub_fds = SubStruct.sdef.find_sub_field_defs_by_offset(23)
+    assert sub_fds == ([SubStruct.sdef.ss_My2, MyStruct.sdef.ms_Pad], 1)
     # access sub field
-    assert SubStruct.ss_My_def.ms_Word_def == MyStruct.ms_Word_def
+    assert SubStruct.sdef.ss_My.ms_Word == MyStruct.sdef.ms_Word
     # offset/base offset of field
-    assert SubStruct.ss_My2_def.offset == 20
-    assert SubStruct.ss_My2_def.base_offset == 20
-    assert SubStruct.ss_My2_def.ms_Pad_def.offset == 2
-    assert SubStruct.ss_My2_def.ms_Pad_def.base_offset == 22
+    assert SubStruct.sdef.ss_My2.offset == 20
+    assert SubStruct.sdef.ss_My2.base_offset == 20
+    assert SubStruct.sdef.ss_My2.ms_Pad.offset == 2
+    assert SubStruct.sdef.ss_My2.ms_Pad.base_offset == 22
     # parent defs
-    assert SubStruct.ss_My2_def.ms_Pad_def.parent_def == SubStruct.ss_My2_def
+    assert SubStruct.sdef.ss_My2.ms_Pad.parent_def == SubStruct.sdef.ss_My2
 
     # check instance
     mem = MockMemory()

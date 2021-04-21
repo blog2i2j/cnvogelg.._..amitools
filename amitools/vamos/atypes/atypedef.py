@@ -28,12 +28,12 @@ class AmigaTypeDecorator(object):
         if not issubclass(cls, AmigaType):
             raise RuntimeError("cls must dervive from AmigaType")
         # get name of type
-        name = self.struct_def.get_type_name()
+        name = self.struct_def.sdef.get_type_name()
         return name
 
     def _gen_field_methods(self, cls):
         # add get/set methods
-        for field_def in self.struct_def.get_field_defs():
+        for field_def in self.struct_def.sdef.get_field_defs():
             # make a lowercase/underscore name without prefix
             # e.g. lh_TailPred -> tail_pred
             base_name = self._name_convert(field_def.name)
@@ -69,7 +69,7 @@ class AmigaTypeDecorator(object):
         if cls._struct_def == ref_stype:
             return cls
         # find an atype with the same name
-        name = ref_stype.get_type_name()
+        name = ref_stype.sdef.get_type_name()
         ref_atype = cls.find_type(name)
         if ref_atype is not None:
             return ref_atype

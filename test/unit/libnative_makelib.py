@@ -23,7 +23,7 @@ def libnative_makelib_test():
 
     init_tab = 0x200
     ib = InitStructBuilder(mem, init_tab)
-    name_off = LibraryStruct.lib_Node_def.ln_Name_def.base_offset
+    name_off = LibraryStruct.sdef.lib_Node.ln_Name.base_offset
     ib.init_long(name_off, name_addr)
     ib.end()
 

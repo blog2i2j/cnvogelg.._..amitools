@@ -1,6 +1,7 @@
 from .astruct import (
     AmigaStruct,
     AmigaStructTypes,
+    AmigaStructFieldDefs,
     APTR_SELF,
     BPTR_SELF,
     TypeBase,
@@ -9,34 +10,23 @@ from .astruct import (
 from .pointer import APTR, BPTR
 
 
-class InvalidAmigaTypeException(Exception):
-    def __init__(self, type_name):
-        self.type_name = type_name
-
-    def __str__(self):
-        return self.type_name
-
-
 class AmigaStructDecorator(object):
     def decorate(self, cls):
         # check class and store base name (without Struct postfix)
         type_name = self._validate_class(cls)
-        cls._type_name = type_name
-        # setup field data
-        self._setup_fields(cls)
+        # setup struct def via format
+        struct_def = self._setup_fields(cls, cls._format, type_name)
+        cls.sdef = struct_def
+        cls._byte_size = struct_def.get_total_size()
         # add to pool
         AmigaStructTypes.add_struct(cls)
         return cls
 
-    def _setup_fields(self, cls):
-        total_size = 0
-        offset = 0
-        index = 0
-        name_to_field_def = {}
-        field_defs = []
+    def _setup_fields(self, cls, format, type_name):
+        struct_def = AmigaStructFieldDefs(type_name)
 
         # run through fields
-        for field_type, field_name in cls._format:
+        for field_type, field_name in format:
 
             # replace self pointers
             if field_type is APTR_SELF:
@@ -61,6 +51,8 @@ class AmigaStructDecorator(object):
                 )
 
             # create field
+            index = struct_def.get_num_field_defs()
+            offset = struct_def.get_total_size()
             field_def = FieldDef(
                 index=index,
                 offset=offset,
@@ -69,26 +61,10 @@ class AmigaStructDecorator(object):
                 size=field_size,
                 struct=cls,
             )
-            field_defs.append(field_def)
+            # add to struct
+            struct_def.add_field_def(field_def)
 
-            # store name -> index mapping
-            name_to_field_def[field_name] = field_def
-
-            # add name to class directly
-            field_name = field_name + "_def"
-            if getattr(cls, field_name, None) is not None:
-                raise RuntimeError("field '%s' already a member of class!" % field_name)
-            setattr(cls, field_name, field_def)
-
-            index += 1
-            offset += field_size
-            total_size += field_size
-
-        # store in class
-        cls._byte_size = total_size
-        cls._field_defs = field_defs
-        cls._name_to_field_def = name_to_field_def
-        cls._num_fields = index
+        return struct_def
 
     def _validate_class(self, cls):
         # make sure cls is derived from AmigaStruct

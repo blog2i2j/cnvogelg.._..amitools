@@ -30,7 +30,7 @@ def libtypes_process_bptr_test():
     assert proc.seg_list == 0x40
     # check in mem seg list baddr
     struct = proc.get_type_struct()
-    off = struct.pr_SegList_def.offset
+    off = struct.sdef.pr_SegList.offset
     addr = proc.addr + off
     assert mem.r32(addr) == 0x40
     # setup CLI
@@ -39,7 +39,7 @@ def libtypes_process_bptr_test():
     assert type(proc.cli) is CLI
     assert proc.cli == cli.addr
     # check in mem CLI baddr
-    off = struct.pr_CLI_def.offset
+    off = struct.sdef.pr_CLI.offset
     addr = proc.addr + off
     assert mem.r32(addr) == cli.addr
     cli.free()
