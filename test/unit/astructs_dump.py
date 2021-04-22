@@ -12,6 +12,8 @@ from amitools.vamos.astructs import (
     APTR_VOID,
     BitField,
     BitFieldType,
+    Enum,
+    EnumType,
 )
 
 
@@ -41,10 +43,18 @@ class MyBitField(BitField, ULONG):
     baz = 4
 
 
+@EnumType
+class MyEnum(Enum, ULONG):
+    a = 3
+    b = 4
+    c = 0xFFFFFFFF
+
+
 @AmigaStructDef
 class SpecialStruct(AmigaStruct):
     _format = [
         (MyBitField, "ss_MyBitField"),
+        (MyEnum, "ss_MyEnum"),
     ]
 
 
@@ -99,7 +109,8 @@ def astructs_dump_type_struct_test():
     assert dump_type(SpecialStruct) == [
         "     @0000         Special {",
         "#0000 0000 @0000/0000 +0004    MyBitField           ss_MyBitField       ",
-        "     @0004 =0004   }",
+        "#0001 0001 @0004/0004 +0004    MyEnum               ss_MyEnum           ",
+        "     @0008 =0008   }",
     ]
 
 

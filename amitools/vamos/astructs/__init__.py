@@ -7,3 +7,4 @@ from .array import ARRAY, ArrayIter
 from .string import CSTR, BSTR
 from .dump import TypeDumper
 from .bitfield import BitField, BitFieldType
+from .enum import Enum, EnumType

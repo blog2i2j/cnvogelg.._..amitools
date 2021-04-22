@@ -69,3 +69,12 @@ def astructs_bitfield_inst_test():
     assert not bf.has_bits("a")
     assert not bf.has_bits(MyBF.a)
     assert mem.r32(4) == MyBF.c
+    # set value
+    bf.set(MyBF.a | MyBF.b)
+    assert str(bf) == "a|b"
+    assert int(bf) == MyBF.b | MyBF.a
+    assert bf.has_bits("b")
+    assert bf.has_bits(MyBF.b)
+    assert bf.has_bits("a")
+    assert bf.has_bits(MyBF.a)
+    assert mem.r32(4) == MyBF.b | MyBF.a

@@ -78,11 +78,15 @@ class BitField:
 
     def set_bits(self, what):
         bmask = self._get_bit_mask(what)
-        self.set(self.get() | bmask)
+        super().set(self.get() | bmask)
 
     def clr_bits(self, what):
         bmask = self._get_bit_mask(what)
-        self.set(self.get() & ~bmask)
+        super().set(self.get() & ~bmask)
+
+    def set(self, val):
+        bmask = self._get_bit_mask(val)
+        super().set(bmask)
 
 
 def BitFieldType(cls):
