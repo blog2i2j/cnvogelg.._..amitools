@@ -10,6 +10,8 @@ from amitools.vamos.astructs import (
     APTR,
     APTR_SELF,
     APTR_VOID,
+    BitField,
+    BitFieldType,
 )
 
 
@@ -29,6 +31,20 @@ class SubStruct(AmigaStruct):
         (MyStruct, "ss_My"),
         (APTR(MyStruct), "ss_MyPtr"),
         (APTR_SELF, "ss_SubPtr"),
+    ]
+
+
+@BitFieldType
+class MyBitField(BitField, ULONG):
+    foo = 1
+    bar = 2
+    baz = 4
+
+
+@AmigaStructDef
+class SpecialStruct(AmigaStruct):
+    _format = [
+        (MyBitField, "ss_MyBitField"),
     ]
 
 
@@ -79,6 +95,11 @@ def astructs_dump_type_struct_test():
         "#0001 0004 @0012/000c +0004    My*                  ss_MyPtr            ",
         "#0002 0005 @0016/0010 +0004    Sub*                 ss_SubPtr           ",
         "     @0020 =0020   }",
+    ]
+    assert dump_type(SpecialStruct) == [
+        "     @0000         Special {",
+        "#0000 0000 @0000/0000 +0004    MyBitField           ss_MyBitField       ",
+        "     @0004 =0004   }",
     ]
 
 

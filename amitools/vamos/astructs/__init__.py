@@ -6,3 +6,4 @@ from .pointer import BPTR, APTR, BPTR_VOID, APTR_VOID, PointerType
 from .array import ARRAY, ArrayIter
 from .string import CSTR, BSTR
 from .dump import TypeDumper
+from .bitfield import BitField, BitFieldType
