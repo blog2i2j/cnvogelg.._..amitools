@@ -50,7 +50,7 @@ def astructs_astruct_base_class_test():
     res = MyStruct.sdef.find_sub_field_defs_by_name("ms_Word")
     assert res == [ms_Word]
     # find by alias name
-    stack_size = MyStruct.sdef.stack_size # alias for ms_StackSize
+    stack_size = MyStruct.sdef.stack_size  # alias for ms_StackSize
     assert stack_size is MyStruct.sdef.ms_StackSize
     # offset of fields
     fd, delta = MyStruct.sdef.find_field_def_by_offset(4)

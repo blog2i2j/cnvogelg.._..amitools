@@ -1,6 +1,8 @@
 from amitools.vamos.astructs import (
     AmigaStructDef,
     AmigaStruct,
+    EnumType, Enum,
+    BitFieldType, BitField,
     APTR_SELF,
     APTR_VOID,
     APTR,
@@ -14,13 +16,42 @@ from amitools.vamos.astructs import (
     ARRAY,
 )
 
+@EnumType
+class NodeType(Enum, UBYTE):
+    """manage valid node type constants and conversions"""
+
+    NT_UNKNOWN = 0
+    NT_TASK = 1
+    NT_INTERRUPT = 2
+    NT_DEVICE = 3
+    NT_MSGPORT = 4
+    NT_MESSAGE = 5
+    NT_FREEMSG = 6
+    NT_REPLYMSG = 7
+    NT_RESOURCE = 8
+    NT_LIBRARY = 9
+    NT_MEMORY = 10
+    NT_SOFTINT = 11
+    NT_FONT = 12
+    NT_PROCESS = 13
+    NT_SEMAPHORE = 14
+    NT_SIGNALSEM = 15
+    NT_BOOTNODE = 16
+    NT_KICKMEM = 17
+    NT_GRAPHICS = 18
+    NT_DEATHMESSAGE = 19
+
+    NT_USER = 254
+    NT_EXTENDED = 255
+
+
 # Node
 @AmigaStructDef
 class NodeStruct(AmigaStruct):
     _format = [
         (APTR_SELF, "ln_Succ"),
         (APTR_SELF, "ln_Pred"),
-        (UBYTE, "ln_Type"),
+        (NodeType, "ln_Type"),
         (BYTE, "ln_Pri"),
         (CSTR, "ln_Name"),
     ]
@@ -32,12 +63,20 @@ class MinNodeStruct(AmigaStruct):
     _format = [(APTR_SELF, "mln_Succ"), (APTR_SELF, "mln_Pred")]
 
 
+@BitFieldType
+class LibFlags(BitField, UBYTE):
+    LIBF_SUMMING = 1 << 0
+    LIBF_CHANGED = 1 << 1
+    LIBF_SUMUSED = 1 << 2
+    LIBF_DELEXP = 1 << 3
+
+
 # Library
 @AmigaStructDef
 class LibraryStruct(AmigaStruct):
     _format = [
         (NodeStruct, "lib_Node"),
-        (UBYTE, "lib_Flags"),
+        (LibFlags, "lib_Flags"),
         (UBYTE, "lib_pad"),
         (UWORD, "lib_NegSize"),
         (UWORD, "lib_PosSize"),
@@ -71,12 +110,19 @@ class MinListStruct(AmigaStruct):
     ]
 
 
+@EnumType
+class MsgPortFlags(Enum, UBYTE):
+    PA_SIGNAL = 0
+    PA_SOFTINT = 1
+    PA_IGNORE = 2
+
+
 # MsgPort
 @AmigaStructDef
 class MsgPortStruct(AmigaStruct):
     _format = [
         (NodeStruct, "mp_Node"),
-        (UBYTE, "mp_Flags"),
+        (MsgPortFlags, "mp_Flags"),
         (UBYTE, "mp_SigBit"),
         (APTR_VOID, "mp_SigTask"),
         (ListStruct, "mp_MsgList"),
@@ -109,13 +155,34 @@ class SoftIntListStruct(AmigaStruct):
     _format = [(ListStruct, "sh_List"), (UWORD, "sh_Pad")]
 
 
+@BitFieldType
+class TaskFlags(BitField, UBYTE):
+    TF_PROCTIME = 1 << 0
+    TF_ETASK = 1 << 3
+    TF_STACKCHK = 1 << 4
+    TF_EXCEPT = 1 << 5
+    TF_SWITCH = 1 << 6
+    TF_LAUNCH = 1 << 7
+
+
+@EnumType
+class TaskState(Enum, UBYTE):
+    TS_INVALID = 0
+    TS_ADDED = 1
+    TS_RUN = 2
+    TS_READY = 3
+    TS_WAIT = 4
+    TS_EXCEPT = 5
+    TS_REMOVED = 6
+
+
 # Task
 @AmigaStructDef
 class TaskStruct(AmigaStruct):
     _format = [
         (NodeStruct, "tc_Node"),
-        (UBYTE, "tc_Flags"),
-        (UBYTE, "tc_State"),
+        (TaskFlags, "tc_Flags"),
+        (TaskState, "tc_State"),
         (BYTE, "tc_IDNestCnt"),
         (BYTE, "tc_TDNestCnt"),
         (ULONG, "tc_SigAlloc"),
@@ -136,6 +203,18 @@ class TaskStruct(AmigaStruct):
         (ListStruct, "tc_MemEntry"),
         (APTR_VOID, "tc_UserData"),
     ]
+
+
+@BitFieldType
+class AttnFlags(BitField, UWORD):
+    AFF_68010 = 1 << 0
+    AFF_68020 = 1 << 1
+    AFF_68030 = 1 << 2
+    AFF_68040 = 1 << 3
+    AFF_68881 = 1 << 4
+    AFF_68882 = 1 << 5
+    AFF_FPU40 = 1 << 6
+    AFF_68060 = 1 << 7
 
 
 @AmigaStructDef
@@ -168,7 +247,7 @@ class ExecLibraryStruct(AmigaStruct):
         (UWORD, "SysFlags"),
         (BYTE, "IDNestCnt"),
         (BYTE, "TDNestCnt"),
-        (UWORD, "AttnFlags"),
+        (AttnFlags, "AttnFlags"),
         (UWORD, "AttnResched"),
         (APTR_VOID, "ResModules"),
         (APTR_VOID, "TaskTrapCode"),
@@ -291,6 +370,14 @@ class MemHeaderStruct(AmigaStruct):
     ]
 
 
+@BitFieldType
+class ResidentFlags(BitField, UBYTE):
+    RTF_AUTOINIT = 1 << 7
+    RTF_AFTERDOS = 1 << 2
+    RTF_SINGLETASK = 1 << 1
+    RTF_COLDSTART = 1 << 0
+
+
 # Resident
 @AmigaStructDef
 class ResidentStruct(AmigaStruct):
@@ -298,7 +385,7 @@ class ResidentStruct(AmigaStruct):
         (UWORD, "rt_MatchWord"),
         (APTR_VOID, "rt_MatchTag"),
         (APTR_VOID, "rt_EndSkip"),
-        (UBYTE, "rt_Flags"),
+        (ResidentFlags, "rt_Flags"),
         (UBYTE, "rt_Version"),
         (UBYTE, "rt_Type"),
         (BYTE, "rt_Pri"),
