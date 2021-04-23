@@ -103,7 +103,6 @@ def BitFieldType(cls):
     mem = inspect.getmembers(cls)
     for name, val in mem:
         if type(val) is int and name[0] != "_":
-            print(name, val)
             # check that val is really a bit mask
             if val & (val - 1) != 0:
                 raise ValueError("no bit mask in bit field: " % name)

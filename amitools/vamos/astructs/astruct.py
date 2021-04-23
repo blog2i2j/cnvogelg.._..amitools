@@ -1,3 +1,4 @@
+import re
 import collections
 from .typebase import TypeBase
 
@@ -91,6 +92,7 @@ class AmigaStructFieldDefs:
         self._field_defs = []
         self._name_to_field_def = {}
         self._total_size = 0
+        self._alias_names = {}
 
     def get_num_field_defs(self):
         return len(self._field_defs)
@@ -99,9 +101,14 @@ class AmigaStructFieldDefs:
         return self._total_size
 
     def add_field_def(self, field_def):
+        field_name = field_def.name
         self._field_defs.append(field_def)
-        self._name_to_field_def[field_def.name] = field_def
+        self._name_to_field_def[field_name] = field_def
         self._total_size += field_def.size
+        # find alias name
+        alias_name = self._to_alias_name(field_def.name)
+        if alias_name != field_name:
+            self._alias_names[alias_name] = field_name
 
     def get_type_name(self):
         return self._type_name
@@ -116,10 +123,19 @@ class AmigaStructFieldDefs:
         return self._field_defs[key]
 
     def find_field_def_by_name(self, name):
-        return self._name_to_field_def.get(name)
+        fdef = self._name_to_field_def.get(name)
+        if not fdef:
+            # try alias
+            name = self._alias_names.get(name)
+            if name:
+                fdef = self._name_to_field_def.get(name)
+        return fdef
 
     def __getattr__(self, name):
-        return self._name_to_field_def.get(name)
+        fdef = self.find_field_def_by_name(name)
+        if fdef:
+            return fdef
+        raise AttributeError("Invalid key '{}'".format(name))
 
     def find_field_def_by_offset(self, offset):
         """return field_def, delta that matches offset, otherwise None, 0"""
@@ -168,6 +184,19 @@ class AmigaStructFieldDefs:
             if issubclass(field_def.type, AmigaStruct):
                 cur_cls = field_def.type.sdef
         return field_defs
+
+    def get_alias_name(self, name):
+        return self._alias_names.get(name)
+
+    def _to_alias_name(self, name):
+        """convert camel case names to underscore and remove prefix"""
+        # strip leading prefix
+        pos = name.find("_")
+        if pos > 0:
+            name = name[pos + 1 :]
+        # to underscore
+        s1 = re.sub("(.)([A-Z][a-z]+)", r"\1_\2", name)
+        return re.sub("([a-z0-9])([A-Z])", r"\1_\2", s1).lower()
 
 
 class AmigaStruct(TypeBase):
@@ -270,8 +299,13 @@ class AmigaStruct(TypeBase):
 
     def get(self, field_name):
         """return field instance by name"""
-        if field_name in self._name_to_field:
-            return self._name_to_field[field_name]
+        field = self._name_to_field.get(field_name)
+        if not field:
+            # try alias
+            alias_name = self.sdef.get_alias_name(field_name)
+            if alias_name:
+                field = self._name_to_field.get(alias_name)
+        return field
 
     def __getattr__(self, field_name):
         field = self.get(field_name)

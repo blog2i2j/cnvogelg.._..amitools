@@ -49,6 +49,9 @@ def astructs_astruct_base_class_test():
     assert MyStruct.sdef.ms_Word == ms_Word
     res = MyStruct.sdef.find_sub_field_defs_by_name("ms_Word")
     assert res == [ms_Word]
+    # find by alias name
+    stack_size = MyStruct.sdef.stack_size # alias for ms_StackSize
+    assert stack_size is MyStruct.sdef.ms_StackSize
     # offset of fields
     fd, delta = MyStruct.sdef.find_field_def_by_offset(4)
     assert fd.name == "ms_SegList"
@@ -77,6 +80,10 @@ def astructs_astruct_base_inst_test():
     assert ms.find_field_by_offset(0) == (field, 0)
     assert ms.find_field_by_addr(0x10) == (field, 0)
     assert ms.find_field_def_by_addr(0x10) == (ms.sdef[0], 0)
+    assert ms.ms_Word == field
+    # alias name
+    field = ms.ms_StackSize
+    assert ms.stack_size == field
     # access
     ms.get("ms_Word").set(-3000)
     assert ms.get("ms_Word").get() == -3000
@@ -85,7 +92,7 @@ def astructs_astruct_base_inst_test():
     assert ms.ms_Word.get() == 2000
 
 
-def astructs_astruct_sub_struct_test():
+def astructs_astruct_sub_struct_class_test():
     # check class
     assert SubStruct.sdef.get_type_name() == "Sub"
     assert SubStruct.get_byte_size() == 32
@@ -117,6 +124,8 @@ def astructs_astruct_sub_struct_test():
     # parent defs
     assert SubStruct.sdef.ss_My2.ms_Pad.parent_def == SubStruct.sdef.ss_My2
 
+
+def astructs_astruct_sub_struct_inst_test():
     # check instance
     mem = MockMemory()
     ss = SubStruct(mem, 0x10)
