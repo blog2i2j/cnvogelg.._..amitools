@@ -93,12 +93,16 @@ class AmigaStructFieldDefs:
         self._name_to_field_def = {}
         self._total_size = 0
         self._alias_names = {}
+        self._alias_type = None
 
     def get_num_field_defs(self):
         return len(self._field_defs)
 
     def get_total_size(self):
         return self._total_size
+
+    def get_alias_type(self):
+        return self._alias_type
 
     def add_field_def(self, field_def):
         field_name = field_def.name
@@ -211,6 +215,13 @@ class AmigaStruct(TypeBase):
         return cls.sdef.get_type_name()
 
     @classmethod
+    def get_alias_type(cls):
+        alias_type = cls.sdef._alias_type
+        if alias_type:
+            return alias_type
+        return cls
+
+    @classmethod
     def _alloc(cls, alloc, tag):
         if tag is None:
             tag = cls.get_signature()
@@ -292,7 +303,8 @@ class AmigaStruct(TypeBase):
     def _create_field_type(self, field_def):
         addr = self._addr + field_def.offset
         base_offset = self._base_offset + field_def.offset
-        field = field_def.type(
+        cls_type = field_def.type.get_alias_type()
+        field = cls_type(
             self._mem, addr, offset=field_def.offset, base_offset=base_offset
         )
         return field

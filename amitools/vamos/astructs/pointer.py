@@ -103,7 +103,8 @@ class PointerType(TypeBase):
         # null pointer
         if ref_addr == 0:
             return None
-        return self._ref_type(mem=self._mem, addr=ref_addr)
+        cls_type = self._ref_type.get_alias_type()
+        return cls_type(mem=self._mem, addr=ref_addr)
 
     def __getattr__(self, key):
         if key == "aptr":

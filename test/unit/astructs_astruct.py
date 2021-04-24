@@ -3,12 +3,14 @@ from amitools.vamos.mem import MemoryAlloc
 from amitools.vamos.astructs import (
     AmigaStruct,
     AmigaStructDef,
+    AmigaClassDef,
     WORD,
     UWORD,
     BPTR_VOID,
     LONG,
     APTR,
     APTR_SELF,
+    CSTR,
 )
 
 
@@ -200,3 +202,42 @@ def astructs_astruct_alloc_test():
     res = MyStruct.alloc(alloc)
     assert type(res) is MyStruct
     res.free()
+
+
+@AmigaStructDef
+class PlainStruct(AmigaStruct):
+    _format = [
+        (APTR_SELF, "next"),
+        (APTR_SELF, "prev"),
+        (CSTR, "name"),
+    ]
+
+
+@AmigaClassDef
+class PlainClass(PlainStruct):
+    def foo(self):
+        result = []
+        prev = self.prev.get()
+        if prev:
+            prev_foo = prev.foo()
+            result.append(prev_foo)
+        txt = self.name.get_str()
+        if txt:
+            result.append(txt)
+        next = self.next.get()
+        if next:
+            next_foo = next.foo()
+            result.append(next_foo)
+        return "".join(result)
+
+
+def astructs_astruct_class_test():
+    mem = MockMemory()
+    alloc = MemoryAlloc(mem)
+    pc = PlainClass.alloc(alloc)
+    assert type(pc) == PlainClass
+    assert pc.foo() == ""
+    pc.name.alloc_ref(alloc, "hello")
+    assert pc.foo() == "hello"
+    pc.name.free_ref()
+    pc.free()

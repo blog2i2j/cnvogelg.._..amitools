@@ -25,6 +25,11 @@ class TypeBase:
         """return the type signature"""
         return cls.__name__
 
+    @classmethod
+    def get_alias_type(cls):
+        """return the type alias (amiga class instead of struct) or the struct"""
+        return cls
+
     # --- instance ---
 
     def __init__(
@@ -113,7 +118,11 @@ class TypeBase:
         mem_obj = cls._alloc(alloc, tag, *args, **kwargs)
         if not mem_obj:
             return None
-        return cls(mem=alloc.get_mem(), addr=mem_obj.addr, alloc=alloc, mem_obj=mem_obj)
+        # create instance of this or alias type
+        cls_type = cls.get_alias_type()
+        return cls_type(
+            mem=alloc.get_mem(), addr=mem_obj.addr, alloc=alloc, mem_obj=mem_obj
+        )
 
     @classmethod
     def _alloc(cls, alloc, tag):

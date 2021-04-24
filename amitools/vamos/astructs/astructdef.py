@@ -11,7 +11,7 @@ from .pointer import APTR, BPTR
 
 
 class AmigaStructDecorator(object):
-    def decorate(self, cls):
+    def __call__(self, cls):
         # check class and store base name (without Struct postfix)
         type_name = self._validate_class(cls)
         # setup struct def via format
@@ -82,7 +82,16 @@ class AmigaStructDecorator(object):
         return base_name
 
 
-def AmigaStructDef(cls):
-    """a class decorator that setups up an amiga struct class"""
-    decorator = AmigaStructDecorator()
-    return decorator.decorate(cls)
+AmigaStructDef = AmigaStructDecorator()
+
+
+class AmigaClassDecorator:
+    def __call__(self, cls):
+        assert issubclass(cls, AmigaStruct)
+        # store as derived class
+        assert cls.sdef._alias_type is None
+        cls.sdef._alias_type = cls
+        return cls
+
+
+AmigaClassDef = AmigaClassDecorator()

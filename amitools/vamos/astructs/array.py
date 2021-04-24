@@ -24,7 +24,8 @@ class ArrayType(TypeBase):
     def get(self, index):
         """Return n-th element in array"""
         entry_addr = self._get_entry_addr(index)
-        return self._element_type(self._mem, entry_addr)
+        cls_type = self._element_type.get_alias_type()
+        return cls_type(self._mem, entry_addr)
 
     def _get_entry_addr(self, index):
         assert index >= 0 and index < self._array_size
