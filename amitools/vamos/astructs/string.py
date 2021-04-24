@@ -38,13 +38,13 @@ class CStringType(TypeBase):
             super(CStringType, self).__eq__(other)
 
     @classmethod
-    def alloc_inst(self, alloc, txt, tag=None):
+    def _alloc(cls, alloc, tag, txt):
         if tag is None:
             tag = "CString('%s')" % txt
         return alloc.alloc_cstr(tag, txt)
 
     @classmethod
-    def free_inst(self, alloc, mem_obj):
+    def _free(cls, alloc, mem_obj):
         alloc.free_cstr(mem_obj)
 
 
@@ -84,13 +84,13 @@ class BStringType(TypeBase):
             super(BStringType, self).__eq__(other)
 
     @classmethod
-    def alloc_inst(cls, alloc, txt, tag=None):
+    def _alloc(cls, alloc, tag, txt):
         if tag is None:
             tag = "BString('%s')" % txt
         return alloc.alloc_bstr(tag, txt)
 
     @classmethod
-    def free_inst(cls, alloc, mem_obj):
+    def _free(cls, alloc, mem_obj):
         alloc.free_bstr(mem_obj)
 
 

@@ -181,14 +181,22 @@ def astructs_astruct_baddr_test():
     assert mem.r32(0x14) == 0x20
 
 
-def astructs_astruct_alloc_test():
+def astructs_astruct_alloc_ptr_test():
     mem = MockMemory()
     alloc = MemoryAlloc(mem)
     MyStructPtr = APTR(MyStruct)
     ptr = MyStructPtr(mem, 0x10)
     assert ptr.aptr == 0
-    res = ptr.alloc(alloc)
+    res = ptr.alloc_ref(alloc)
     assert type(res) is MyStruct
     assert ptr.aptr != 0
-    ptr.free()
+    ptr.free_ref()
     assert ptr.aptr == 0
+
+
+def astructs_astruct_alloc_test():
+    mem = MockMemory()
+    alloc = MemoryAlloc(mem)
+    res = MyStruct.alloc(alloc)
+    assert type(res) is MyStruct
+    res.free()

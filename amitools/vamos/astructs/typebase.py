@@ -28,7 +28,15 @@ class TypeBase:
     # --- instance ---
 
     def __init__(
-        self, mem=None, addr=None, cpu=None, reg=None, offset=0, base_offset=0
+        self,
+        mem=None,
+        addr=None,
+        cpu=None,
+        reg=None,
+        offset=0,
+        base_offset=0,
+        alloc=None,
+        mem_obj=None,
     ):
         """create instance of a type.
 
@@ -41,6 +49,9 @@ class TypeBase:
         self._cpu = cpu
         self._offset = offset
         self._base_offset = base_offset
+        # optional allocation
+        self._mem_obj = mem_obj
+        self._alloc = alloc
         # both addr and reg are not allowed
         assert not (reg and addr)
         if reg:
@@ -92,3 +103,28 @@ class TypeBase:
             return self._base_offset
         else:
             raise AttributeError(self, key)
+
+    # allocation
+
+    @classmethod
+    def alloc(cls, alloc, *args, tag=None, **kwargs):
+        if not tag:
+            tag = cls.get_signature()
+        mem_obj = cls._alloc(alloc, tag, *args, **kwargs)
+        if not mem_obj:
+            return None
+        return cls(mem=alloc.get_mem(), addr=mem_obj.addr, alloc=alloc, mem_obj=mem_obj)
+
+    @classmethod
+    def _alloc(cls, alloc, tag):
+        return alloc.alloc_memory(tag, cls._byte_size)
+
+    @classmethod
+    def _free(cls, alloc, mem_obj):
+        alloc.free_memory(mem_obj)
+
+    def free(self):
+        assert self._alloc and self._mem_obj
+        self._free(self._alloc, self._mem_obj)
+        self._alloc = None
+        self._mem_obj = None

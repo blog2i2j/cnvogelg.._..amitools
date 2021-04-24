@@ -1,8 +1,10 @@
 from amitools.vamos.astructs import (
     AmigaStructDef,
     AmigaStruct,
-    EnumType, Enum,
-    BitFieldType, BitField,
+    EnumType,
+    Enum,
+    BitFieldType,
+    BitField,
     APTR_SELF,
     APTR_VOID,
     APTR,
@@ -15,6 +17,7 @@ from amitools.vamos.astructs import (
     CSTR,
     ARRAY,
 )
+
 
 @EnumType
 class NodeType(Enum, UBYTE):

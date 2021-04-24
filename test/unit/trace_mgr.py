@@ -46,7 +46,7 @@ def check_log(chn, records):
         (
             chn,
             lvl,
-            "W(2): 000208: 0015      Struct  [@000200 +000008 node] Node+8 = ln_Type(UBYTE)+0",
+            "W(2): 000208: 0015      Struct  [@000200 +000008 node] Node+8 = ln_Type(NodeType)+0",
         ),
         (
             chn,

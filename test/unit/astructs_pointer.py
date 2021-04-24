@@ -9,9 +9,11 @@ from amitools.vamos.astructs.pointer import (
     BPTR_VOID,
 )
 from amitools.vamos.machine import MockMemory, MockCPU, REG_D0
+from amitools.vamos.mem import MemoryAlloc
 
 cpu = MockCPU()
 mem = MockMemory()
+alloc = MemoryAlloc(mem)
 
 
 def astructs_pointer_aptr_void_test():

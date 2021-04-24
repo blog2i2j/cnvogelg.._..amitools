@@ -211,13 +211,13 @@ class AmigaStruct(TypeBase):
         return cls.sdef.get_type_name()
 
     @classmethod
-    def alloc_inst(cls, alloc, tag=None):
+    def _alloc(cls, alloc, tag):
         if tag is None:
             tag = cls.get_signature()
         return alloc.alloc_struct(tag, cls)
 
     @classmethod
-    def free_inst(cls, alloc, mem_obj):
+    def _free(cls, alloc, mem_obj):
         alloc.free_struct(mem_obj)
 
     # ----- instance -----
