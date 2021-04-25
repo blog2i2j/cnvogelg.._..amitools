@@ -44,7 +44,7 @@ class AccessStruct(object):
             field_def = struct.sdef.find_field_def_by_name(field_name)
             if not field_def:
                 raise KeyError(self, name)
-            field = struct.get_field_by_index(field_def.index)
+            field = struct.sfields.get_field_by_index(field_def.index)
             # find potential next struct
             if isinstance(field, AmigaStruct):
                 struct = field

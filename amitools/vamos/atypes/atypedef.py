@@ -83,7 +83,7 @@ class AmigaTypeDecorator(object):
         gen_type = self._get_gen_type(cls, ref_stype)
 
         def get_struct_ptr(self, ptr=False):
-            addr = int(self._struct.get_field_by_index(index))
+            addr = int(self._struct.sfields.get_field_by_index(index))
             if ptr:
                 return addr
             if addr == 0:
@@ -101,7 +101,7 @@ class AmigaTypeDecorator(object):
                     raise ValueError(
                         "invalid type assign: want=%s, got=%s" % (gen_type, type(val))
                     )
-            self._struct.get_field_by_index(index).set(val)
+            self._struct.sfields.get_field_by_index(index).set(val)
 
         self._setup_get_set(base_name, cls, get_struct_ptr, set_struct_ptr)
 
@@ -136,7 +136,7 @@ class AmigaTypeDecorator(object):
         def get_str(self, ptr=False):
             """return the str or "" if ptr==0
             or the addr of the pointer (addr=True)"""
-            addr = self._struct.get_field_by_index(index).get_ref_addr()
+            addr = self._struct.sfields.get_field_by_index(index).get_ref_addr()
             if ptr:
                 return addr
             return str_cls(self.mem, addr)
@@ -149,7 +149,7 @@ class AmigaTypeDecorator(object):
                 ptr = val.get_addr()
             else:
                 raise ValueError("set cstring: wrong value: %s" % val)
-            self._struct.get_field_by_index(index).set_ref_addr(ptr)
+            self._struct.sfields.get_field_by_index(index).set_ref_addr(ptr)
 
         self._setup_get_set(base_name, cls, get_str, set_str)
 
@@ -161,10 +161,10 @@ class AmigaTypeDecorator(object):
         index = field_def.index
 
         def get_func(self):
-            return self._struct.get_field_by_index(index).get()
+            return self._struct.sfields.get_field_by_index(index).get()
 
         def set_func(self, val):
-            self._struct.get_field_by_index(index).set(val)
+            self._struct.sfields.get_field_by_index(index).set(val)
 
         self._setup_get_set(base_name, cls, get_func, set_func)
 
@@ -184,7 +184,7 @@ class AmigaTypeDecorator(object):
         if get_wrap:
 
             def get_func(self, raw=False):
-                val = self._struct.get_field_by_index(index).get()
+                val = self._struct.sfields.get_field_by_index(index).get()
                 if raw:
                     return val
                 return get_wrap(val)
@@ -192,19 +192,19 @@ class AmigaTypeDecorator(object):
         else:
 
             def get_func(self):
-                return self._struct.get_field_by_index(index).get()
+                return self._struct.sfields.get_field_by_index(index).get()
 
         if set_wrap:
 
             def set_func(self, val, raw=False):
                 if not raw:
                     val = set_wrap(val)
-                self._struct.get_field_by_index(index).set(val)
+                self._struct.sfields.get_field_by_index(index).set(val)
 
         else:
 
             def set_func(self, val):
-                self._struct.get_field_by_index(index).set(val)
+                self._struct.sfields.get_field_by_index(index).set(val)
 
         self._setup_get_set(base_name, cls, get_func, set_func)
 

@@ -74,14 +74,14 @@ def astructs_astruct_base_inst_test():
     ms = MyStruct(mem, 0x10)
     assert str(ms) == "[AStruct:My,@000010+00000c]"
     # field access
-    fields = ms.get_fields()
+    fields = ms.sfields.get_fields()
     assert len(fields) == 4
-    field = ms.get_field_by_index(0)
+    field = ms.sfields.get_field_by_index(0)
     assert field.get_addr() == 0x10
     assert ms.get("ms_Word") == field
-    assert ms.find_field_by_offset(0) == (field, 0)
-    assert ms.find_field_by_addr(0x10) == (field, 0)
-    assert ms.find_field_def_by_addr(0x10) == (ms.sdef[0], 0)
+    assert ms.sfields.find_field_by_offset(0) == (field, 0)
+    assert ms.sfields.find_field_by_addr(0x10) == (field, 0)
+    assert ms.sfields.find_field_def_by_addr(0x10) == (ms.sdef[0], 0)
     assert ms.ms_Word == field
     # alias name
     field = ms.ms_StackSize
@@ -140,19 +140,19 @@ def astructs_astruct_sub_struct_inst_test():
     assert ms.addr == 0x10
     assert ms.ms_Pad.addr == 0x12
     assert ss.get("ss_My") is ms
-    assert ss.find_field_by_offset(3) == (ms, 3)
-    assert ss.find_field_by_addr(0x13) == (ms, 3)
+    assert ss.sfields.find_field_by_offset(3) == (ms, 3)
+    assert ss.sfields.find_field_by_addr(0x13) == (ms, 3)
     ms2 = ss.ss_My2
     assert type(ms2) is MyStruct
     assert ms2.addr == 0x10 + 20
     assert ms2.ms_Pad.addr == 0x12 + 20
     assert ss.get("ss_My2") is ms2
-    assert ss.find_field_by_offset(23) == (ms2, 3)
-    assert ss.find_field_by_addr(0x13 + 20) == (ms2, 3)
+    assert ss.sfields.find_field_by_offset(23) == (ms2, 3)
+    assert ss.sfields.find_field_by_addr(0x13 + 20) == (ms2, 3)
     # get sub fields
-    sub_fs = ss.find_sub_fields_by_offset(3)
+    sub_fs = ss.sfields.find_sub_fields_by_offset(3)
     assert sub_fs == ([ms, ms.ms_Pad], 1)
-    sub_fs = ss.find_sub_fields_by_offset(23)
+    sub_fs = ss.sfields.find_sub_fields_by_offset(23)
     assert sub_fs == ([ms2, ms2.ms_Pad], 1)
     # getattr/setattr
     ss.ss_My.ms_Word.set(2000)

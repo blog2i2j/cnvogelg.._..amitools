@@ -203,6 +203,87 @@ class AmigaStructFieldDefs:
         return re.sub("([a-z0-9])([A-Z])", r"\1_\2", s1).lower()
 
 
+class AmigaStructFields:
+    def __init__(self, astruct):
+        self.astruct = astruct
+        self.sdef = astruct.sdef
+        self._fields = []
+        self._name_to_field = {}
+        for field_def in self.sdef.get_field_defs():
+            field = self._create_field_type(field_def)
+            self._fields.append(field)
+            self._name_to_field[field_def.name] = field
+
+    def get_fields(self):
+        """return all field instances"""
+        return self._fields
+
+    def get_field_by_index(self, index):
+        """return the type instance associated with the field"""
+        return self._fields[index]
+
+    def get_field_by_name(self, name):
+        return self._name_to_field.get(name)
+
+    def get_field_by_name_or_alias(self, name):
+        field = self._name_to_field.get(name)
+        if not field:
+            alias_name = self.sdef.get_alias_name(name)
+            if alias_name:
+                field = self._name_to_field.get(alias_name)
+        return field
+
+    def find_field_by_offset(self, offset):
+        """return field, delta or None, 0"""
+        field_def, delta = self.sdef.find_field_def_by_offset(offset)
+        if not field_def:
+            return None, 0
+        return self._fields[field_def.index], delta
+
+    def find_sub_fields_by_offset(self, base_offset):
+        """return [fields], delta or None, 0"""
+        cur_self = self
+        offset = base_offset
+        fields = []
+        while True:
+            field, delta = cur_self.find_field_by_offset(offset)
+            if not field:
+                return None, 0
+            fields.append(field)
+            # is a struct?
+            if not isinstance(field, AmigaStruct):
+                break
+            # next sub struct
+            cur_self = field.sfields
+            offset -= field.get_offset()
+        return fields, delta
+
+    def find_field_def_by_addr(self, addr):
+        """return field, delta or None, 0"""
+        offset = addr - self.astruct._addr
+        return self.sdef.find_field_def_by_offset(offset)
+
+    def find_field_by_addr(self, addr):
+        """return field, delta or None, 0"""
+        offset = addr - self.astruct._addr
+        return self.find_field_by_offset(offset)
+
+    def find_sub_fields_by_addr(self, addr):
+        """return [fields], delta or None, 0"""
+        offset = addr - self.astruct._addr
+        return self.find_sub_fields_by_offset(offset)
+
+    def _create_field_type(self, field_def):
+        astruct = self.astruct
+        addr = astruct._addr + field_def.offset
+        base_offset = astruct._base_offset + field_def.offset
+        cls_type = field_def.type.get_alias_type()
+        field = cls_type(
+            astruct._mem, addr, offset=field_def.offset, base_offset=base_offset
+        )
+        return field
+
+
 class AmigaStruct(TypeBase):
 
     # overwrite in derived class!
@@ -236,14 +317,7 @@ class AmigaStruct(TypeBase):
     def __init__(self, mem, addr, **kwargs):
         super(AmigaStruct, self).__init__(mem, addr, **kwargs)
         # create field instances
-        fields = []
-        name_to_field = {}
-        for field_def in self.sdef.get_field_defs():
-            field = self._create_field_type(field_def)
-            fields.append(field)
-            name_to_field[field_def.name] = field
-        self._fields = fields
-        self._name_to_field = name_to_field
+        self.sfields = AmigaStructFields(self)
 
     def __str__(self):
         return "[AStruct:%s,@%06x+%06x]" % (
@@ -252,72 +326,9 @@ class AmigaStruct(TypeBase):
             self._byte_size,
         )
 
-    def get_fields(self):
-        """return all field instances"""
-        return self._fields
-
-    def get_field_by_index(self, index):
-        """return the type instance associated with the field"""
-        return self._fields[index]
-
-    def find_field_by_offset(self, offset):
-        """return field, delta or None, 0"""
-        field_def, delta = self.sdef.find_field_def_by_offset(offset)
-        if not field_def:
-            return None, 0
-        return self._fields[field_def.index], delta
-
-    def find_sub_fields_by_offset(self, base_offset):
-        """return [fields], delta or None, 0"""
-        cur_self = self
-        offset = base_offset
-        fields = []
-        while True:
-            field, delta = cur_self.find_field_by_offset(offset)
-            if not field:
-                return None, 0
-            fields.append(field)
-            # is a struct?
-            if not isinstance(field, AmigaStruct):
-                break
-            # next sub struct
-            cur_self = field
-            offset -= field.get_offset()
-        return fields, delta
-
-    def find_field_def_by_addr(self, addr):
-        """return field, delta or None, 0"""
-        offset = addr - self._addr
-        return self.sdef.find_field_def_by_offset(offset)
-
-    def find_field_by_addr(self, addr):
-        """return field, delta or None, 0"""
-        offset = addr - self._addr
-        return self.find_field_by_offset(offset)
-
-    def find_sub_fields_by_addr(self, addr):
-        """return [fields], delta or None, 0"""
-        offset = addr - self.addr
-        return self.find_sub_fields_by_offset(offset)
-
-    def _create_field_type(self, field_def):
-        addr = self._addr + field_def.offset
-        base_offset = self._base_offset + field_def.offset
-        cls_type = field_def.type.get_alias_type()
-        field = cls_type(
-            self._mem, addr, offset=field_def.offset, base_offset=base_offset
-        )
-        return field
-
     def get(self, field_name):
         """return field instance by name"""
-        field = self._name_to_field.get(field_name)
-        if not field:
-            # try alias
-            alias_name = self.sdef.get_alias_name(field_name)
-            if alias_name:
-                field = self._name_to_field.get(alias_name)
-        return field
+        return self.sfields.get_field_by_name_or_alias(field_name)
 
     def __getattr__(self, field_name):
         field = self.get(field_name)
