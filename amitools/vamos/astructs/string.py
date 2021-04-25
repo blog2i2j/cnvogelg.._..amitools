@@ -103,13 +103,13 @@ class CSTR(APTR(CStringType)):
         if self.aptr == 0:
             return None
         else:
-            return self.ref().get()
+            return self.ref.get()
 
     def set_str(self, val):
         if self.aptr == 0:
             raise ValueError("Can't set NULL string!")
         else:
-            self.ref().set(val)
+            self.ref.set(val)
 
     def __getattr__(self, key):
         if key == "str":
@@ -131,13 +131,13 @@ class BSTR(BPTR(BStringType)):
         if self.bptr == 0:
             return None
         else:
-            return self.ref().get()
+            return self.ref.get()
 
     def set_str(self, val):
         if self.bptr == 0:
             raise ValueError("Can't set BNULL string!")
         else:
-            self.ref().set(val)
+            self.ref.set(val)
 
     def __getattr__(self, key):
         if key == "str":

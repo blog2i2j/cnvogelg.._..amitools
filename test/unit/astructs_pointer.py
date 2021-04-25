@@ -20,7 +20,7 @@ def astructs_pointer_aptr_void_test():
     assert PointerType.get_byte_size() == 4
     void_ptr = APTR_VOID(mem=mem, addr=0x40)
     mem.w32(0x40, 0x80)
-    ref = void_ptr.ref()
+    ref = void_ptr.ref
     assert type(ref) is VOID
     assert ref.get_addr() == 0x80
     assert void_ptr.get_ref_addr() == 0x80
@@ -29,7 +29,7 @@ def astructs_pointer_aptr_void_test():
     void_ptr.set_ref_addr(0x100)
     assert void_ptr.get_ref_addr() == 0x100
     assert int(void_ptr) == 0x100
-    new_ref = void_ptr.ref()
+    new_ref = void_ptr.ref
     assert type(new_ref) is VOID
     assert new_ref.get_addr() == 0x100
     assert mem.r32(0x40) == 0x100
@@ -43,7 +43,7 @@ def astructs_pointer_aptr_void_test():
 def astructs_pointer_aptr_null_test():
     null_ptr = APTR_VOID(mem=mem, addr=0x40)
     mem.w32(0x40, 0)
-    assert null_ptr.ref() is None
+    assert null_ptr.ref is None
     assert int(null_ptr) == 0
     assert null_ptr.get_ref_addr() == 0
 
@@ -52,7 +52,7 @@ def astructs_pointer_bptr_void_test():
     assert BCPLPointerType.get_byte_size() == 4
     void_ptr = BPTR_VOID(mem=mem, addr=0x40)
     mem.w32(0x40, 0x20)  # 0x20 = BCPL addr of 0x80
-    ref = void_ptr.ref()
+    ref = void_ptr.ref
     assert type(ref) is VOID
     assert ref.get_addr() == 0x80
     assert void_ptr.get_ref_addr() == 0x80
@@ -61,7 +61,7 @@ def astructs_pointer_bptr_void_test():
     # change pointer
     void_ptr.set_ref_addr(0x100)
     assert void_ptr.get_ref_addr() == 0x100
-    new_ref = void_ptr.ref()
+    new_ref = void_ptr.ref
     assert type(new_ref) is VOID
     assert new_ref.get_addr() == 0x100
     # int conversion is BPTR!
@@ -86,6 +86,6 @@ def astructs_pointer_bptr_void_test():
 def astructs_pointer_bptr_null_test():
     null_ptr = BPTR_VOID(mem=mem, addr=0x40)
     mem.w32(0x40, 0)
-    assert null_ptr.ref() is None
+    assert null_ptr.ref is None
     assert int(null_ptr) == 0
     assert null_ptr.get_ref_addr() == 0

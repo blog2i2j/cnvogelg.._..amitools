@@ -31,14 +31,14 @@ class PointerType(TypeBase):
         assert self._ref is None
         new_ref = self._ref_type.alloc(alloc, *args, tag=tag)
         self.set_ref(new_ref)
-        return self.ref()
+        return self.get_ref()
 
     def free_ref(self):
         assert self._ref
         self._ref.free()
         self.set_ref(None)
 
-    def ref(self):
+    def get_ref(self):
         """return the referenced type instance"""
         ref_addr = self._read_pointer()
         if ref_addr != self._ref_addr:
@@ -109,11 +109,15 @@ class PointerType(TypeBase):
     def __getattr__(self, key):
         if key == "aptr":
             return self.get_ref_addr()
+        elif key == "ref":
+            return self.get_ref()
         return super(PointerType, self).__getattr__(key)
 
     def __setattr__(self, key, val):
         if key == "aptr":
             self.set_ref_addr(val)
+        elif key == "ref":
+            return self.set_ref(val)
         super(PointerType, self).__setattr__(key, val)
 
 
