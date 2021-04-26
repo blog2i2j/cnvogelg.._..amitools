@@ -61,6 +61,17 @@ class FieldDef(FieldDefBase):
     def get_parent_def(self):
         return self._parent_def
 
+    def get_def_path(self):
+        # build array of all parent defs (if any)
+        field_def = self
+        result = [field_def]
+        while True:
+            field_def = field_def.get_parent_def()
+            if not field_def:
+                break
+            result.insert(0, field_def)
+        return result
+
     def get_sub_field_by_name(self, name):
         # only works for astructs
         if issubclass(self.type, AmigaStruct):
@@ -258,6 +269,26 @@ class AmigaStructFields:
             offset -= field.get_offset()
         return fields, delta
 
+    def find_sub_field_by_def(self, field_def):
+        """return field associated with the field_def"""
+        def_path = field_def.get_def_path()
+        return self.find_sub_field_by_def_path(def_path)
+
+    def find_sub_field_by_def_path(self, def_path):
+        """return field or None"""
+        field = None
+        astruct = self.astruct
+        for field_def in def_path:
+            idx = field_def.index
+            assert isinstance(astruct, field_def.struct)
+            assert field_def == astruct.sdef.get_field_def(idx)
+            field = astruct.sfields.get_field_by_index(idx)
+            if not isinstance(field, AmigaStruct):
+                break
+            # next
+            astruct = field
+        return field
+
     def find_field_def_by_addr(self, addr):
         """return field, delta or None, 0"""
         offset = addr - self.astruct._addr
@@ -312,12 +343,33 @@ class AmigaStruct(TypeBase):
     def _free(cls, alloc, mem_obj):
         alloc.free_struct(mem_obj)
 
+    @classmethod
+    def allocWithName(cls, alloc, name_field_def, name):
+        inst = cls.alloc(alloc)
+        if inst:
+            name_field = inst.sfields.find_sub_field_by_def(name_field_def)
+            if not name_field:
+                raise RuntimeError("Name field not found: " + name_field_def)
+            name_field.alloc_ref(alloc, name)
+            inst.add_free_ref(name_field)
+        return inst
+
     # ----- instance -----
 
     def __init__(self, mem, addr, **kwargs):
         super(AmigaStruct, self).__init__(mem, addr, **kwargs)
         # create field instances
         self.sfields = AmigaStructFields(self)
+        # refs to be freed automatically
+        self._free_refs = []
+
+    def free(self):
+        for free_ref in self._free_refs:
+            free_ref.free_ref()
+        super().free()
+
+    def add_free_ref(self, free_ref):
+        self._free_refs.append(free_ref)
 
     def __str__(self):
         return "[AStruct:%s,@%06x+%06x]" % (

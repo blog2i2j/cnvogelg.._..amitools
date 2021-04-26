@@ -92,6 +92,9 @@ def astructs_astruct_base_inst_test():
     # access via __getattr__
     ms.ms_Word.set(2000)
     assert ms.ms_Word.get() == 2000
+    # find field
+    field = ms.ms_Word
+    assert ms.sfields.find_sub_field_by_def(MyStruct.sdef.ms_Word) == field
 
 
 def astructs_astruct_sub_struct_class_test():
@@ -125,6 +128,11 @@ def astructs_astruct_sub_struct_class_test():
     assert SubStruct.sdef.ss_My2.ms_Pad.base_offset == 22
     # parent defs
     assert SubStruct.sdef.ss_My2.ms_Pad.parent_def == SubStruct.sdef.ss_My2
+    # def path
+    assert SubStruct.sdef.ss_My2.ms_Pad.get_def_path() == [
+        SubStruct.sdef.ss_My2,
+        MyStruct.sdef.ms_Pad,
+    ]
 
 
 def astructs_astruct_sub_struct_inst_test():
@@ -167,6 +175,9 @@ def astructs_astruct_sub_struct_inst_test():
     assert ss.ss_My2.ms_Pad.addr == 0x10 + 22
     assert ss.ss_My2.ms_Pad.offset == 2
     assert ss.ss_My2.ms_Pad.base_offset == 22
+    # find sub field
+    field = ss.ss_My2.ms_Pad
+    assert ss.sfields.find_sub_field_by_def(SubStruct.sdef.ss_My2.ms_Pad) == field
 
 
 def astructs_astruct_baddr_test():
@@ -194,6 +205,7 @@ def astructs_astruct_alloc_ptr_test():
     assert ptr.aptr != 0
     ptr.free_ref()
     assert ptr.aptr == 0
+    assert alloc.is_all_free()
 
 
 def astructs_astruct_alloc_test():
@@ -202,6 +214,7 @@ def astructs_astruct_alloc_test():
     res = MyStruct.alloc(alloc)
     assert type(res) is MyStruct
     res.free()
+    assert alloc.is_all_free()
 
 
 @AmigaStructDef
@@ -217,18 +230,18 @@ class PlainStruct(AmigaStruct):
 class PlainClass(PlainStruct):
     def foo(self):
         result = []
-        prev = self.prev.get()
+        prev = self.prev.ref
         if prev:
             prev_foo = prev.foo()
             result.append(prev_foo)
-        txt = self.name.get_str()
+        txt = self.name.str
         if txt:
             result.append(txt)
-        next = self.next.get()
+        next = self.next.ref
         if next:
             next_foo = next.foo()
             result.append(next_foo)
-        return "".join(result)
+        return " ".join(result)
 
 
 def astructs_astruct_class_test():
@@ -237,7 +250,18 @@ def astructs_astruct_class_test():
     pc = PlainClass.alloc(alloc)
     assert type(pc) == PlainClass
     assert pc.foo() == ""
+    # alloc a name
     pc.name.alloc_ref(alloc, "hello")
     assert pc.foo() == "hello"
+    # another struct
+    pc2 = PlainClass.allocWithName(alloc, PlainClass.sdef.name, "world!")
+    assert type(pc2) == PlainClass
+    assert pc2.name.str == "world!"
+    assert pc2.foo() == "world!"
+    pc.next.ref = pc2
+    assert pc.foo() == "hello world!"
+    pc2.free()
+    # clean up pc
     pc.name.free_ref()
     pc.free()
+    assert alloc.is_all_free()
