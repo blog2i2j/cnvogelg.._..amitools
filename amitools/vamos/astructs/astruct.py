@@ -334,7 +334,7 @@ class AmigaStruct(TypeBase):
         return cls
 
     @classmethod
-    def _alloc(cls, alloc, tag):
+    def _alloc(cls, alloc, tag, **kwargs):
         if tag is None:
             tag = cls.get_signature()
         return alloc.alloc_struct(tag, cls)
@@ -344,13 +344,13 @@ class AmigaStruct(TypeBase):
         alloc.free_struct(mem_obj)
 
     @classmethod
-    def allocWithName(cls, alloc, name_field_def, name):
-        inst = cls.alloc(alloc)
+    def allocWithName(cls, alloc, name_field_def, name, **kwargs):
+        inst = cls.alloc(alloc, **kwargs)
         if inst:
             name_field = inst.sfields.find_sub_field_by_def(name_field_def)
             if not name_field:
                 raise RuntimeError("Name field not found: " + name_field_def)
-            name_field.alloc_ref(alloc, name)
+            name_field.alloc_str(alloc, name)
             inst.add_free_ref(name_field)
         return inst
 

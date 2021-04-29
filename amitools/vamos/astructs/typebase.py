@@ -42,6 +42,7 @@ class TypeBase:
         base_offset=0,
         alloc=None,
         mem_obj=None,
+        **kwargs,
     ):
         """create instance of a type.
 
@@ -112,16 +113,17 @@ class TypeBase:
     # allocation
 
     @classmethod
-    def alloc(cls, alloc, *args, tag=None, **kwargs):
+    def alloc(cls, alloc, tag=None, **kwargs):
         if not tag:
             tag = cls.get_signature()
-        mem_obj = cls._alloc(alloc, tag, *args, **kwargs)
+        mem_obj = cls._alloc(alloc, tag, **kwargs)
         if not mem_obj:
             return None
         # create instance of this or alias type
         cls_type = cls.get_alias_type()
         return cls_type(
-            mem=alloc.get_mem(), addr=mem_obj.addr, alloc=alloc, mem_obj=mem_obj
+            mem=alloc.get_mem(), addr=mem_obj.addr, alloc=alloc, mem_obj=mem_obj,
+            **kwargs
         )
 
     @classmethod

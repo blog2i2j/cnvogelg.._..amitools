@@ -26,10 +26,10 @@ class PointerType(TypeBase):
         self._ref = None
         self._ref_addr = None
 
-    def alloc_ref(self, alloc, *args, tag=None):
+    def alloc_ref(self, alloc, tag=None, **kwargs):
         # make sure nothing is allocated yet
         assert self._ref is None
-        new_ref = self._ref_type.alloc(alloc, *args, tag=tag)
+        new_ref = self._ref_type.alloc(alloc, tag=tag, **kwargs)
         self.set_ref(new_ref)
         return self.get_ref()
 

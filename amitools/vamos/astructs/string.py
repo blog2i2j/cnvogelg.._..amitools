@@ -38,7 +38,8 @@ class CStringType(TypeBase):
             super(CStringType, self).__eq__(other)
 
     @classmethod
-    def _alloc(cls, alloc, tag, txt):
+    def _alloc(cls, alloc, tag, **kwargs):
+        txt = kwargs['txt']
         if tag is None:
             tag = "CString('%s')" % txt
         return alloc.alloc_cstr(tag, txt)
@@ -84,7 +85,8 @@ class BStringType(TypeBase):
             super(BStringType, self).__eq__(other)
 
     @classmethod
-    def _alloc(cls, alloc, tag, txt):
+    def _alloc(cls, alloc, tag, **kwargs):
+        txt = kwargs['txt']
         if tag is None:
             tag = "BString('%s')" % txt
         return alloc.alloc_bstr(tag, txt)
@@ -121,6 +123,12 @@ class CSTR(APTR(CStringType)):
             self.set_str(val)
         super(CSTR, self).__setattr__(key, val)
 
+    def alloc_str(self, alloc, txt):
+        return self.alloc_ref(alloc, txt=txt)
+
+    def free_str(self):
+        self.free_ref()
+
 
 class BSTR(BPTR(BStringType)):
     @classmethod
@@ -148,3 +156,9 @@ class BSTR(BPTR(BStringType)):
         if key == "str":
             self.set_str(val)
         super(BSTR, self).__setattr__(key, val)
+
+    def alloc_str(self, alloc, txt):
+        return self.alloc_ref(alloc, txt=txt)
+
+    def free_str(self):
+        self.free_ref()

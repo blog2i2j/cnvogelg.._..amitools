@@ -62,15 +62,16 @@ def astructs_string_cstr_alloc_test():
     assert cstr.str is None
     assert cstr.aptr == 0
     txt = "hello, world!"
-    res = cstr.alloc_ref(alloc, txt)
+    res = cstr.alloc_str(alloc, txt)
     assert res is not None
     assert type(res) is CStringType
     assert cstr.str == txt
     assert cstr.aptr != 0
     assert mem.r_cstr(cstr.aptr) == txt
-    cstr.free_ref()
+    cstr.free_str()
     assert cstr.str is None
     assert cstr.aptr == 0
+    assert alloc.is_all_free()
 
 
 def astructs_string_bstr_test():
@@ -128,12 +129,13 @@ def astructs_string_bstr_alloc_test():
     assert bstr.str is None
     assert bstr.aptr == 0
     txt = "hello, world!"
-    res = bstr.alloc_ref(alloc, txt)
+    res = bstr.alloc_str(alloc, txt)
     assert res is not None
     assert type(res) is BStringType
     assert bstr.str == txt
     assert bstr.aptr != 0
     assert mem.r_bstr(bstr.aptr) == txt
-    bstr.free_ref()
+    bstr.free_str()
     assert bstr.str is None
     assert bstr.aptr == 0
+    assert alloc.is_all_free()

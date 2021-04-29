@@ -228,6 +228,11 @@ class PlainStruct(AmigaStruct):
 
 @AmigaClassDef
 class PlainClass(PlainStruct):
+    def __init__(self, mem, addr, next=None, prev=None, **kwargs):
+        super().__init__(mem, addr, **kwargs)
+        self.next.ref = next
+        self.prev.ref = prev
+
     def foo(self):
         result = []
         prev = self.prev.ref
@@ -251,7 +256,7 @@ def astructs_astruct_class_test():
     assert type(pc) == PlainClass
     assert pc.foo() == ""
     # alloc a name
-    pc.name.alloc_ref(alloc, "hello")
+    pc.name.alloc_str(alloc, "hello")
     assert pc.foo() == "hello"
     # another struct
     pc2 = PlainClass.allocWithName(alloc, PlainClass.sdef.name, "world!")
@@ -260,8 +265,13 @@ def astructs_astruct_class_test():
     assert pc2.foo() == "world!"
     pc.next.ref = pc2
     assert pc.foo() == "hello world!"
+    # more struct
+    pc3 = PlainClass.allocWithName(alloc, PlainClass.sdef.name, "what:",
+        next=pc2)
+    assert pc3.foo() == "what: world!"
+    pc3.free()
     pc2.free()
     # clean up pc
-    pc.name.free_ref()
+    pc.name.free_str()
     pc.free()
     assert alloc.is_all_free()
