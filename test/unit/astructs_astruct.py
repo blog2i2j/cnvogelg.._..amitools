@@ -11,6 +11,7 @@ from amitools.vamos.astructs import (
     APTR,
     APTR_SELF,
     CSTR,
+    BSTR,
 )
 
 
@@ -211,8 +212,21 @@ def astructs_astruct_alloc_ptr_test():
 def astructs_astruct_alloc_test():
     mem = MockMemory()
     alloc = MemoryAlloc(mem)
-    res = MyStruct.alloc(alloc)
+    res = MyStruct.alloc(alloc, ms_Word=21, ms_Pad=42)
     assert type(res) is MyStruct
+    assert res.ms_Word.val == 21
+    assert res.ms_Pad.val == 42
+    res.free()
+    assert alloc.is_all_free()
+
+
+def astructs_astruct_alloc_sub_test():
+    mem = MockMemory()
+    alloc = MemoryAlloc(mem)
+    res = SubStruct.alloc(alloc, ss_My={"ms_Word": 21, "ms_Pad": 42})
+    assert type(res) is SubStruct
+    assert res.ss_My.ms_Word.val == 21
+    assert res.ss_My.ms_Pad.val == 42
     res.free()
     assert alloc.is_all_free()
 
@@ -223,16 +237,12 @@ class PlainStruct(AmigaStruct):
         (APTR_SELF, "next"),
         (APTR_SELF, "prev"),
         (CSTR, "name"),
+        (BSTR, "bname"),
     ]
 
 
 @AmigaClassDef
 class PlainClass(PlainStruct):
-    def __init__(self, mem, addr, next=None, prev=None, **kwargs):
-        super().__init__(mem, addr, **kwargs)
-        self.next.ref = next
-        self.prev.ref = prev
-
     def foo(self):
         result = []
         prev = self.prev.ref
@@ -259,19 +269,45 @@ def astructs_astruct_class_test():
     pc.name.alloc_str(alloc, "hello")
     assert pc.foo() == "hello"
     # another struct
-    pc2 = PlainClass.allocWithName(alloc, PlainClass.sdef.name, "world!")
+    pc2 = PlainClass.alloc(alloc, name="world!")
     assert type(pc2) == PlainClass
     assert pc2.name.str == "world!"
     assert pc2.foo() == "world!"
     pc.next.ref = pc2
     assert pc.foo() == "hello world!"
     # more struct
-    pc3 = PlainClass.allocWithName(alloc, PlainClass.sdef.name, "what:",
-        next=pc2)
+    pc3 = PlainClass.alloc(alloc, name="what:", bname="ugh!", next=pc2)
     assert pc3.foo() == "what: world!"
+    assert pc3.next.ref is pc2
+    assert pc3.name.str == "what:"
+    assert pc3.bname.str == "ugh!"
     pc3.free()
     pc2.free()
     # clean up pc
     pc.name.free_str()
     pc.free()
+    assert alloc.is_all_free()
+
+
+@AmigaStructDef
+class SubPlainStruct(AmigaStruct):
+    _format = [
+        (PlainStruct, "plain"),
+        (PlainStruct, "plain2"),
+    ]
+
+
+@AmigaClassDef
+class SubPlainClass(SubPlainStruct):
+    pass
+
+
+def astructs_astruct_class_sub_test():
+    mem = MockMemory()
+    alloc = MemoryAlloc(mem)
+    spc = SubPlainClass.alloc(alloc, plain={"name": "abc"}, plain2={"name": "cde"})
+    assert type(spc) == SubPlainClass
+    assert spc.plain.name.str == "abc"
+    assert spc.plain2.name.str == "cde"
+    spc.free()
     assert alloc.is_all_free()

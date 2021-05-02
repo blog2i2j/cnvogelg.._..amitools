@@ -122,8 +122,11 @@ class TypeBase:
         # create instance of this or alias type
         cls_type = cls.get_alias_type()
         return cls_type(
-            mem=alloc.get_mem(), addr=mem_obj.addr, alloc=alloc, mem_obj=mem_obj,
-            **kwargs
+            mem=alloc.get_mem(),
+            addr=mem_obj.addr,
+            alloc=alloc,
+            mem_obj=mem_obj,
+            **kwargs,
         )
 
     @classmethod

@@ -343,17 +343,6 @@ class AmigaStruct(TypeBase):
     def _free(cls, alloc, mem_obj):
         alloc.free_struct(mem_obj)
 
-    @classmethod
-    def allocWithName(cls, alloc, name_field_def, name, **kwargs):
-        inst = cls.alloc(alloc, **kwargs)
-        if inst:
-            name_field = inst.sfields.find_sub_field_by_def(name_field_def)
-            if not name_field:
-                raise RuntimeError("Name field not found: " + name_field_def)
-            name_field.alloc_str(alloc, name)
-            inst.add_free_ref(name_field)
-        return inst
-
     # ----- instance -----
 
     def __init__(self, mem, addr, **kwargs):
@@ -362,6 +351,22 @@ class AmigaStruct(TypeBase):
         self.sfields = AmigaStructFields(self)
         # refs to be freed automatically
         self._free_refs = []
+        # setup fields (if any)
+        all_refs = self.setup(kwargs, self._alloc)
+        for r in all_refs:
+            self.add_free_ref(r)
+
+    def setup(self, setup_dict, alloc=None):
+        """setup the fields of the struct"""
+        assert type(setup_dict) is dict
+        all_refs = []
+        for key, val in setup_dict.items():
+            field = self.sfields.get_field_by_name(key)
+            if field:
+                refs = field.setup(val, alloc)
+                if refs:
+                    all_refs += refs
+        return all_refs
 
     def free(self):
         for free_ref in self._free_refs:

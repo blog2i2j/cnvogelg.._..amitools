@@ -26,6 +26,21 @@ class PointerType(TypeBase):
         self._ref = None
         self._ref_addr = None
 
+    def setup(self, val, alloc=None):
+        if val is None:
+            self.set_ref(None)
+        elif type(val) is int:
+            self.set_ref_addr(val)
+        elif isinstance(val, self._ref_type):
+            self.set_ref(val)
+        else:
+            if alloc:
+                ref = self.alloc_ref(alloc)
+                ref.setup(val, alloc)
+                return [ref]
+            else:
+                raise ValueError("No alloc:" + val)
+
     def alloc_ref(self, alloc, *alloc_args, tag=None, **kwargs):
         # make sure nothing is allocated yet
         assert self._ref is None

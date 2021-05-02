@@ -127,6 +127,16 @@ class CSTR(APTR(CStringType)):
     def free_str(self):
         self.free_ref()
 
+    def setup(self, val, alloc=None):
+        if type(val) is str:
+            if alloc:
+                self.alloc_str(alloc, val)
+                return [self]
+            else:
+                raise ValueError("no alloc for str!")
+        else:
+            return super().setup(val, alloc)
+
 
 class BSTR(BPTR(BStringType)):
     @classmethod
@@ -160,3 +170,13 @@ class BSTR(BPTR(BStringType)):
 
     def free_str(self):
         self.free_ref()
+
+    def setup(self, val, alloc=None):
+        if type(val) is str:
+            if alloc:
+                self.alloc_str(alloc, val)
+                return [self]
+            else:
+                raise ValueError("no alloc for str!")
+        else:
+            return super().setup(val, alloc)
