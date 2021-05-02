@@ -113,10 +113,10 @@ class TypeBase:
     # allocation
 
     @classmethod
-    def alloc(cls, alloc, tag=None, **kwargs):
+    def alloc(cls, alloc, *alloc_args, tag=None, **kwargs):
         if not tag:
             tag = cls.get_signature()
-        mem_obj = cls._alloc(alloc, tag, **kwargs)
+        mem_obj = cls._alloc(alloc, tag, *alloc_args)
         if not mem_obj:
             return None
         # create instance of this or alias type
