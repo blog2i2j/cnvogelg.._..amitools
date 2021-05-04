@@ -361,7 +361,7 @@ class AmigaStruct(TypeBase):
         assert type(setup_dict) is dict
         all_refs = []
         for key, val in setup_dict.items():
-            field = self.sfields.get_field_by_name(key)
+            field = self.sfields.get_field_by_name_or_alias(key)
             if field:
                 refs = field.setup(val, alloc)
                 if refs:

@@ -37,6 +37,9 @@ class CStringType(TypeBase):
         else:
             super(CStringType, self).__eq__(other)
 
+    def __str__(self):
+        return str(self.get())
+
     @classmethod
     def _alloc(cls, alloc, tag, txt):
         if tag is None:
@@ -82,6 +85,9 @@ class BStringType(TypeBase):
             return self.get() is None
         else:
             super(BStringType, self).__eq__(other)
+
+    def __str__(self):
+        return str(self.get())
 
     @classmethod
     def _alloc(cls, alloc, tag, txt):

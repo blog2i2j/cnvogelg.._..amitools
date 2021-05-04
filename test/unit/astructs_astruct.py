@@ -98,6 +98,14 @@ def astructs_astruct_base_inst_test():
     assert ms.sfields.find_sub_field_by_def(MyStruct.sdef.ms_Word) == field
 
 
+def astructs_astruct_base_inst_setup_test():
+    mem = MockMemory()
+    ms = MyStruct(mem, 0x10, ms_Word=42, ms_Pad=21, ms_SegList=0x400)
+    assert ms.ms_Word.val == 42
+    assert ms.ms_Pad.val == 21
+    assert ms.ms_SegList.aptr == 0x400
+
+
 def astructs_astruct_sub_struct_class_test():
     # check class
     assert SubStruct.sdef.get_type_name() == "Sub"
@@ -234,11 +242,20 @@ def astructs_astruct_alloc_sub_test():
 @AmigaStructDef
 class PlainStruct(AmigaStruct):
     _format = [
-        (APTR_SELF, "next"),
-        (APTR_SELF, "prev"),
-        (CSTR, "name"),
-        (BSTR, "bname"),
+        (APTR_SELF, "ps_Next"),
+        (APTR_SELF, "ps_Prev"),
+        (CSTR, "ps_Name"),
+        (BSTR, "ps_Bname"),
     ]
+
+
+def astructs_astruct_plain_setup_test():
+    mem = MockMemory()
+    pc = PlainStruct(mem, 0x10, next=0x100, prev=0x200, name=0x120, bname=0x140)
+    assert pc.next.aptr == 0x100
+    assert pc.prev.aptr == 0x200
+    assert pc.name.aptr == 0x120
+    assert pc.bname.aptr == 0x140
 
 
 @AmigaClassDef

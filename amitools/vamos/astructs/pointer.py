@@ -105,6 +105,9 @@ class PointerType(TypeBase):
             self.__class__.__name__, self._ref, self._addr
         )
 
+    def __str__(self):
+        return str(self.get_ref())
+
     def __int__(self):
         return self.get_ref_addr()
 
