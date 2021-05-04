@@ -1,6 +1,6 @@
 from amitools.vamos.libstructs import ListStruct, MinListStruct
-from amitools.vamos.atypes import AmigaType, AmigaTypeDef
-from .node import Node, NodeType, MinNode
+from amitools.vamos.astructs import AmigaClassDef
+from .node import Node, MinNode
 
 
 class ListIter(object):
@@ -8,7 +8,7 @@ class ListIter(object):
         self.alist = alist
         self.mem = self.alist._mem
         if start_node is None:
-            self.node = alist._head.get_succ()
+            self.node = alist._head.succ.ref
         else:
             self.node = start_node
 
@@ -16,15 +16,12 @@ class ListIter(object):
         return self
 
     def __next__(self):
-        succ = self.node.get_succ()
+        succ = self.node.succ.ref
         if succ is None:
             raise StopIteration()
         res = self.node
         self.node = succ
         return res
-
-
-# common list funcs
 
 
 class ListBase:
@@ -33,9 +30,9 @@ class ListBase:
 
     def __len__(self):
         l = 0
-        node = self._head.get_succ()
+        node = self._head.succ.ref
         while True:
-            node = node.get_succ()
+            node = node.succ.ref
             if node is None:
                 break
             l += 1
@@ -45,28 +42,28 @@ class ListBase:
         return ListIter(self, node)
 
     def add_head(self, node):
-        n = self._head.get_succ()
-        node.set_pred(self._head)
-        node.set_succ(n)
-        self._head.set_succ(node)
-        n.set_pred(node)
+        n = self._head.succ.ref
+        node.pred.ref = self._head
+        node.succ.ref = n
+        self._head.succ.ref = node
+        n.pred.ref = node
 
     def add_tail(self, node):
-        tp = self.get_tail_pred()
-        node.set_succ(self._tail)
-        self._tail.set_pred(node)
-        node.set_pred(tp)
-        tp.set_succ(node)
+        tp = self.tail_pred.ref
+        node.succ.ref = self._tail
+        self._tail.pred.ref = node
+        node.pred.ref = tp
+        tp.succ.ref = node
 
     def rem_head(self):
-        node = self._head.get_succ()
+        node = self._head.succ.ref
         if node is None:
             return None
         node.remove()
         return node
 
     def rem_tail(self):
-        node = self.get_tail_pred()
+        node = self.tail_pred.ref
         if node is None:
             return None
         node.remove()
@@ -74,13 +71,13 @@ class ListBase:
 
     def insert(self, node, pred):
         if pred is not None and pred != self._head:
-            pred_succ = pred.get_succ()
+            pred_succ = pred.succ.ref
             if pred_succ:
                 # normal node
-                node.set_succ(pred_succ)
-                node.set_pred(pred)
-                pred_succ.set_pred(node)
-                pred.set_succ(node)
+                node.succ.ref = pred_succ
+                node.pred.ref = pred
+                pred_succ.pred.ref = node
+                pred.succ.ref = node
             else:
                 # last node
                 self.add_tail(node)
@@ -89,56 +86,56 @@ class ListBase:
             self.add_head(node)
 
 
-@AmigaTypeDef(MinListStruct)
-class MinList(AmigaType, ListBase):
-    def __init__(self, mem, addr):
-        AmigaType.__init__(self, mem, addr)
+@AmigaClassDef
+class MinList(MinListStruct, ListBase):
+    def __init__(self, mem, addr, **kwargs):
+        super().__init__(mem, addr, **kwargs)
         self._head = MinNode(mem, self.addr)
         self._tail = MinNode(mem, self.addr + 4)
 
     def __str__(self):
         return "[MinList:@%06x,h=%06x,t=%06x,tp=%06x]" % (
             self.addr,
-            self.get_head(True),
-            self.get_tail(True),
-            self.get_tail_pred(True),
+            self.head.aptr,
+            self.tail.aptr,
+            self.tail_pred.aptr,
         )
 
     def new_list(self):
-        self.set_head(self._tail)
-        self.set_tail(0)
-        self.set_tail_pred(self._head)
+        self.head.ref = self._tail
+        self.tail.ref = None
+        self.tail_pred.ref = self._head
 
 
-@AmigaTypeDef(ListStruct, wrap={"type": NodeType})
-class List(AmigaType, ListBase):
-    def __init__(self, mem, addr):
-        AmigaType.__init__(self, mem, addr)
+@AmigaClassDef
+class List(ListStruct, ListBase):
+    def __init__(self, mem, addr, **kwargs):
+        super().__init__(mem, addr, **kwargs)
         self._head = Node(mem, self.addr)
         self._tail = Node(mem, self.addr + 4)
 
     def __str__(self):
         return "[List:@%06x,h=%06x,t=%06x,tp=%06x,%s]" % (
             self.addr,
-            self.get_head(True),
-            self.get_tail(True),
-            self.get_tail_pred(True),
-            self.get_type(),
+            self.head.aptr,
+            self.tail.aptr,
+            self.tail_pred.aptr,
+            self.type,
         )
 
     # ----- list ops -----
 
     def new_list(self, lt):
-        self.set_type(lt)
-        self.set_head(self._tail)
-        self.set_tail(0)
-        self.set_tail_pred(self._head)
+        self.type.val = lt
+        self.head.ref = self._tail
+        self.tail.ref = None
+        self.tail_pred.ref = self._head
 
     def enqueue(self, node):
         pred = None
-        pri = node.get_pri()
+        pri = node.pri.val
         for ln in self:
-            ln_pri = ln.get_pri()
+            ln_pri = ln.pri.val
             if ln_pri < pri:
                 self.insert(node, pred)
                 return
@@ -148,13 +145,13 @@ class List(AmigaType, ListBase):
     def find_names(self, name):
         """this method is a generator delivering all matches"""
         for node in self:
-            node_name = node.get_name()
+            node_name = node.name.str
             if node_name == name:
                 yield node
 
     def find_name(self, name):
         """this method is a function returning the first match"""
         for node in self:
-            node_name = node.get_name()
+            node_name = node.name.str
             if node_name == name:
                 return node

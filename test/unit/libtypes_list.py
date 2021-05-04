@@ -1,7 +1,7 @@
 from amitools.vamos.machine import MockMemory
 from amitools.vamos.mem import MemoryAlloc
-from amitools.vamos.libtypes import List, MinList, Node, NodeType, MinNode
-from amitools.vamos.libstructs import ListStruct, MinListStruct
+from amitools.vamos.libtypes import List, MinList, Node, MinNode
+from amitools.vamos.libstructs import ListStruct, MinListStruct, NodeType
 
 
 def new_list():
@@ -134,26 +134,22 @@ def libtypes_list_insert_node_test():
 
 def libtypes_list_enqueue_node_test():
     l = new_list()
-    n1 = Node(l.mem, 0x50)
-    n1.set_pri(0)
+    n1 = Node(l.mem, 0x50, pri=0)
     l.enqueue(n1)
     assert len(l) == 1
     assert [a for a in l] == [n1]
     # same pri
-    n2 = Node(l.mem, 0x60)
-    n2.set_pri(0)
+    n2 = Node(l.mem, 0x60, pri=0)
     l.enqueue(n2)
     assert len(l) == 2
     assert [a for a in l] == [n1, n2]
     # higher pri
-    n3 = Node(l.mem, 0x70)
-    n3.set_pri(1)
+    n3 = Node(l.mem, 0x70, pri=1)
     l.enqueue(n3)
     assert len(l) == 3
     assert [a for a in l] == [n3, n1, n2]
     # lower pri
-    n4 = Node(l.mem, 0x80)
-    n4.set_pri(-1)
+    n4 = Node(l.mem, 0x80, pri=-1)
     l.enqueue(n4)
     assert len(l) == 4
     assert [a for a in l] == [n3, n1, n2, n4]
@@ -173,13 +169,13 @@ def libtypes_list_iter_at_test():
 
 def add_node(alist, addr, name):
     n = Node(alist.mem, addr)
-    addr += n.get_type_size()
+    addr += n.get_size()
     name_addr = addr
     alist.mem.w_cstr(addr, name)
     addr += len(name) + 1
     if addr & 3 != 0:
         addr = (addr & ~0x3) + 4
-    n.set_name(name_addr)
+    n.name.aptr = name_addr
     alist.add_tail(n)
     return n, addr
 
@@ -190,9 +186,9 @@ def libtypes_list_find_name_test():
     n1, addr = add_node(l, addr, "hello")
     n2, addr = add_node(l, addr, "world")
     n3, addr = add_node(l, addr, "hello")
-    assert n1.get_name() == "hello"
-    assert n2.get_name() == "world"
-    assert n3.get_name() == "hello"
+    assert n1.name.str == "hello"
+    assert n2.name.str == "world"
+    assert n3.name.str == "hello"
     assert len(l) == 3
     assert [a for a in l] == [n1, n2, n3]
     assert [a for a in l.find_names("bla")] == []

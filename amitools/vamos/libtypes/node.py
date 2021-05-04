@@ -1,105 +1,54 @@
 from amitools.vamos.libstructs import NodeStruct, MinNodeStruct
-from amitools.vamos.atypes import (
-    AmigaType,
-    AmigaTypeWithName,
-    AmigaTypeDef,
-    EnumType,
-    Enum,
-    CString,
-)
-
-
-@EnumType
-class NodeType(Enum):
-    """manage valid node type constants and conversions"""
-
-    NT_UNKNOWN = 0
-    NT_TASK = 1
-    NT_INTERRUPT = 2
-    NT_DEVICE = 3
-    NT_MSGPORT = 4
-    NT_MESSAGE = 5
-    NT_FREEMSG = 6
-    NT_REPLYMSG = 7
-    NT_RESOURCE = 8
-    NT_LIBRARY = 9
-    NT_MEMORY = 10
-    NT_SOFTINT = 11
-    NT_FONT = 12
-    NT_PROCESS = 13
-    NT_SEMAPHORE = 14
-    NT_SIGNALSEM = 15
-    NT_BOOTNODE = 16
-    NT_KICKMEM = 17
-    NT_GRAPHICS = 18
-    NT_DEATHMESSAGE = 19
-
-    NT_USER = 254
-    NT_EXTENDED = 255
-
-
-# common funcs for nodes
+from amitools.vamos.astructs import AmigaClassDef
 
 
 class NodeBase:
     def remove(self, clear=True):
-        succ = self.get_succ()
-        pred = self.get_pred()
+        succ = self.succ.ref
+        pred = self.pred.ref
         if succ is None or pred is None:
             raise ValueError("remove node without succ/pred!")
-        succ.set_pred(pred)
-        pred.set_succ(succ)
+        succ.pred.ref = pred
+        pred.succ.ref = succ
         if clear:
-            self.set_succ(None)
-            self.set_pred(None)
+            self.succ.ref = None
+            self.pred.ref = None
 
 
-@AmigaTypeDef(MinNodeStruct)
-class MinNode(AmigaType, NodeBase):
+@AmigaClassDef
+class MinNode(MinNodeStruct, NodeBase):
     """wrap an Exec MinNode in memory an allow to operate on its values."""
 
     def __str__(self):
         return "[MinNode:@%06x,p=%06x,s=%06x]" % (
             self.addr,
-            self.get_pred(True),
-            self.get_succ(True),
+            self.pred.aptr,
+            self.succ.aptr,
         )
 
-    def setup(self, succ, pred):
-        self.set_succ(succ)
-        self.set_pred(pred)
 
-
-@AmigaTypeDef(NodeStruct, wrap={"type": NodeType})
-class Node(AmigaTypeWithName, NodeBase):
+@AmigaClassDef
+class Node(NodeStruct, NodeBase):
     """wrap an Exec Node in memory an allow to operate on its values."""
 
     def __str__(self):
         return "[Node:@%06x,p=%06x,s=%06x,%s,%d,'%s']" % (
             self.addr,
-            self.get_pred(True),
-            self.get_succ(True),
-            self.get_type(),
-            self.get_pri(),
-            self.get_name(),
+            self.pred.aptr,
+            self.succ.aptr,
+            self.type,
+            self.pri,
+            self.name,
         )
-
-    def setup(self, succ, pred, nt, pri, name=None):
-        self.set_succ(succ)
-        self.set_pred(pred)
-        self.set_type(nt)
-        self.set_pri(pri)
-        if name:
-            self.set_name(name)
 
     # ----- node ops -----
 
     def find_name(self, name):
         """find name after this node"""
-        succ = self.get_succ()
+        succ = self.succ.ref
         if succ is None:
             return None
-        succ_name = succ.get_name()
+        succ_name = succ.name.str
         if succ_name == name:
             return succ
         return succ.find_name(name)

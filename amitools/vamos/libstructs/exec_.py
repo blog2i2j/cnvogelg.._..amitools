@@ -98,7 +98,7 @@ class ListStruct(AmigaStruct):
         (APTR(NodeStruct), "lh_Head"),
         (APTR(NodeStruct), "lh_Tail"),
         (APTR(NodeStruct), "lh_TailPred"),
-        (UBYTE, "lh_Type"),
+        (NodeType, "lh_Type"),
         (UBYTE, "l_pad"),
     ]
 
