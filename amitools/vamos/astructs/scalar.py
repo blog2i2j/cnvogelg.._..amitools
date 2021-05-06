@@ -34,7 +34,7 @@ class ScalarType(TypeBase):
         else:
             return self._read_reg()
 
-    def setup(self, val, alloc=None):
+    def setup(self, val, alloc=None, free_refs=None):
         self.set(val)
 
     def _read_reg(self):

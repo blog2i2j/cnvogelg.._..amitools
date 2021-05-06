@@ -352,29 +352,21 @@ class AmigaStruct(TypeBase):
         # refs to be freed automatically
         self._free_refs = []
         # setup fields (if any)
-        all_refs = self.setup(kwargs, self._alloc)
-        for r in all_refs:
-            self.add_free_ref(r)
+        self.setup(kwargs, self._alloc, self._free_refs)
 
-    def setup(self, setup_dict, alloc=None):
+    def setup(self, setup_dict, alloc=None, free_refs=None):
         """setup the fields of the struct"""
         assert type(setup_dict) is dict
         all_refs = []
         for key, val in setup_dict.items():
             field = self.sfields.get_field_by_name_or_alias(key)
             if field:
-                refs = field.setup(val, alloc)
-                if refs:
-                    all_refs += refs
-        return all_refs
+                field.setup(val, alloc, free_refs)
 
     def free(self):
         for free_ref in self._free_refs:
             free_ref.free_ref()
         super().free()
-
-    def add_free_ref(self, free_ref):
-        self._free_refs.append(free_ref)
 
     def __str__(self):
         return "[AStruct:%s,@%06x+%06x]" % (

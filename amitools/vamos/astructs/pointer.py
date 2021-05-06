@@ -26,7 +26,7 @@ class PointerType(TypeBase):
         self._ref = None
         self._ref_addr = None
 
-    def setup(self, val, alloc=None):
+    def setup(self, val, alloc=None, free_refs=None):
         if val is None:
             self.set_ref(None)
         elif type(val) is int:
@@ -36,8 +36,8 @@ class PointerType(TypeBase):
         else:
             if alloc:
                 ref = self.alloc_ref(alloc)
-                ref.setup(val, alloc)
-                return [ref]
+                free_refs.append(ref)
+                ref.setup(val, alloc, free_refs)
             else:
                 raise ValueError("No alloc:" + val)
 
