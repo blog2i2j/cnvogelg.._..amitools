@@ -1,12 +1,12 @@
 from amitools.vamos.libstructs import FileLockStruct, FileHandleStruct
-from amitools.vamos.atypes import AmigaType, AmigaTypeDef
+from amitools.vamos.astructs import AmigaClassDef
 
 
-@AmigaTypeDef(FileLockStruct)
-class FileLock(AmigaType):
+@AmigaClassDef
+class FileLock(FileLockStruct):
     pass
 
 
-@AmigaTypeDef(FileHandleStruct)
-class FileHandle(AmigaType):
+@AmigaClassDef
+class FileHandle(FileHandleStruct):
     pass

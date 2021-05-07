@@ -312,9 +312,7 @@ class SubPlainStruct(AmigaStruct):
         (PlainStruct, "plain"),
         (PlainStruct, "plain2"),
     ]
-    _subfield_aliases = {
-        "name" : "plain.name"
-    }
+    _subfield_aliases = {"name": "plain.name"}
 
 
 @AmigaClassDef

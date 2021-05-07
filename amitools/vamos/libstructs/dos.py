@@ -115,6 +115,11 @@ class ProcessStruct(AmigaStruct):
         (ULONG, "pr_ShellPrivate"),
         (BPTR(FileHandleStruct), "pr_CES"),
     ]
+    _subfield_aliases = {
+        "name": "pr_Task.tc_Node.ln_Name",
+        "type": "pr_Task.tc_Node.ln_Type",
+        "pri": "pr_Task.tc_Node.ln_Pri",
+    }
 
 
 @AmigaStructDef

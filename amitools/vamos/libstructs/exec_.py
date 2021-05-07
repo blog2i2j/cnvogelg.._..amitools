@@ -90,9 +90,9 @@ class LibraryStruct(AmigaStruct):
         (UWORD, "lib_OpenCnt"),
     ]
     _subfield_aliases = {
-        "name" : "lib_Node.ln_Name",
-        "type" : "lib_Node.ln_Type",
-        "pri" : "lib_Node.ln_Pri"
+        "name": "lib_Node.ln_Name",
+        "type": "lib_Node.ln_Type",
+        "pri": "lib_Node.ln_Pri",
     }
 
 
@@ -136,9 +136,9 @@ class MsgPortStruct(AmigaStruct):
         (ListStruct, "mp_MsgList"),
     ]
     _subfield_aliases = {
-        "name" : "mp_Node.ln_Name",
-        "type" : "mp_Node.ln_Type",
-        "pri" : "mp_Node.ln_Pri"
+        "name": "mp_Node.ln_Name",
+        "type": "mp_Node.ln_Type",
+        "pri": "mp_Node.ln_Pri",
     }
 
 
@@ -151,9 +151,9 @@ class MessageStruct(AmigaStruct):
         (UWORD, "mn_Length"),
     ]
     _subfield_aliases = {
-        "name" : "mn_Node.ln_Name",
-        "type" : "mn_Node.ln_Type",
-        "pri" : "mn_Node.ln_Pri"
+        "name": "mn_Node.ln_Name",
+        "type": "mn_Node.ln_Type",
+        "pri": "mn_Node.ln_Pri",
     }
 
 
@@ -222,10 +222,11 @@ class TaskStruct(AmigaStruct):
         (APTR_VOID, "tc_UserData"),
     ]
     _subfield_aliases = {
-        "name" : "tc_Node.ln_Name",
-        "type" : "tc_Node.ln_Type",
-        "pri" : "tc_Node.ln_Pri"
+        "name": "tc_Node.ln_Name",
+        "type": "tc_Node.ln_Type",
+        "pri": "tc_Node.ln_Pri",
     }
+
 
 @BitFieldType
 class AttnFlags(BitField, UWORD):
@@ -310,10 +311,10 @@ class ExecLibraryStruct(AmigaStruct):
         (APTR_VOID, "ex_MemHandler"),
     ]
     _subfield_aliases = {
-        "name" : "LibNode.lib_Node.ln_Name",
-        "type" : "LibNode.lib_Node.ln_Type",
-        "pri" : "LibNode.lib_Node.ln_Pri",
-        "id_string" : "LibNode.lib_IdString"
+        "name": "LibNode.lib_Node.ln_Name",
+        "type": "LibNode.lib_Node.ln_Type",
+        "pri": "LibNode.lib_Node.ln_Pri",
+        "id_string": "LibNode.lib_IdString",
     }
 
 

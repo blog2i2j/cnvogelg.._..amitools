@@ -1,27 +1,20 @@
-from amitools.vamos.libstructs import ProcessStruct, CLIStruct, PathListStruct
-from amitools.vamos.atypes import AmigaTypeWithName, AmigaType, AmigaTypeDef
-from .node import NodeType
+from amitools.vamos.libstructs import ProcessStruct, CLIStruct, PathListStruct, NodeType
+from amitools.vamos.astructs import AmigaClassDef
 
 
-@AmigaTypeDef(PathListStruct)
-class PathList(AmigaType):
+@AmigaClassDef
+class PathList(PathListStruct):
     pass
 
 
-@AmigaTypeDef(CLIStruct)
-class CLI(AmigaType):
+@AmigaClassDef
+class CLI(CLIStruct):
     pass
 
 
-@AmigaTypeDef(ProcessStruct)
-class Process(AmigaTypeWithName):
-    def setup(self):
-        self.task.setup(nt=NodeType.NT_PROCESS)
-        self.msg_port.setup()
+@AmigaClassDef
+class Process(ProcessStruct):
+    def new_proc(self):
+        self.task.new_task(nt=NodeType.NT_PROCESS)
+        self.msg_port.new_port()
         self.local_vars.new_list()
-
-    def set_name(self, val):
-        self.task.node.name = val
-
-    def get_name(self, ptr=False):
-        return self.task.node.get_name(ptr)
