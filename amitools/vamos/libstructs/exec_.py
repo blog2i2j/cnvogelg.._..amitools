@@ -381,6 +381,17 @@ class ResidentFlags(BitField, UBYTE):
     RTF_COLDSTART = 1 << 0
 
 
+# AutoInit used in Residents
+@AmigaStructDef
+class AutoInitStruct(AmigaStruct):
+    _format = [
+        (ULONG, "ai_PosSize"),
+        (APTR_VOID, "ai_Functions"),
+        (APTR_VOID, "ai_InitStruct"),
+        (APTR_VOID, "ai_InitFunc"),
+    ]
+
+
 # Resident
 @AmigaStructDef
 class ResidentStruct(AmigaStruct):
@@ -394,16 +405,5 @@ class ResidentStruct(AmigaStruct):
         (BYTE, "rt_Pri"),
         (CSTR, "rt_Name"),
         (CSTR, "rt_IdString"),
-        (APTR_VOID, "rt_Init"),
-    ]
-
-
-# AutoInit used in Residents
-@AmigaStructDef
-class AutoInitStruct(AmigaStruct):
-    _format = [
-        (ULONG, "ai_PosSize"),
-        (APTR_VOID, "ai_Functions"),
-        (APTR_VOID, "ai_InitStruct"),
-        (APTR_VOID, "ai_InitFunc"),
+        (APTR(AutoInitStruct), "rt_Init"),
     ]

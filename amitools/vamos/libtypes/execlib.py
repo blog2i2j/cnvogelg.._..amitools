@@ -1,7 +1,4 @@
-from amitools.vamos.libstructs import (
-    ExecLibraryStruct,
-    NodeType
-)
+from amitools.vamos.libstructs import ExecLibraryStruct, NodeType
 from .library import Library
 from amitools.vamos.astructs import AmigaClassDef
 

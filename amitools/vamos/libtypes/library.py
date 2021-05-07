@@ -59,9 +59,7 @@ class Library(LibraryStruct):
     def _alloc(cls, alloc, tag, pos_size, neg_size, fd):
         if tag is None:
             tag = cls.get_signature()
-        return alloc.alloc_lib(
-            tag, cls, pos_size=pos_size, neg_size=neg_size, fd=fd
-        )
+        return alloc.alloc_lib(tag, cls, pos_size=pos_size, neg_size=neg_size, fd=fd)
 
     @classmethod
     def _free(cls, alloc, mem_obj):
