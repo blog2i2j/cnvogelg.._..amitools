@@ -381,6 +381,6 @@ class AmigaStruct(TypeBase):
 
     def __getattr__(self, field_name):
         field = self.get(field_name)
-        if field:
+        if field is not None:
             return field
         return super(AmigaStruct, self).__getattr__(field_name)

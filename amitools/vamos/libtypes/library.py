@@ -13,7 +13,6 @@ class Library(LibraryStruct):
             addr += neg_size
         # now setup library struct
         super().__init__(mem, addr, **kwargs)
-        print("addr", self.get_addr(), self._mem_obj)
         # type?
         type = kwargs.get("type")
         if type:
