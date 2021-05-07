@@ -238,13 +238,13 @@ class AmigaStructFields:
 
     def get_field_by_name_or_alias(self, name, subfield_aliases=None):
         field = self._name_to_field.get(name)
-        if not field:
+        if field is None:
             # alias name
             alias_name = self.sdef.get_alias_name(name)
             if alias_name:
                 field = self._name_to_field.get(alias_name)
             # subfield alias
-            if not field and subfield_aliases:
+            if field is None and subfield_aliases:
                 field_def_path = subfield_aliases.get(name)
                 if field_def_path:
                     return self.find_sub_field_by_def_path(field_def_path)

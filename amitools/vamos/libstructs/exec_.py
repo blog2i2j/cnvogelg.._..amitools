@@ -130,6 +130,11 @@ class MsgPortStruct(AmigaStruct):
         (APTR_VOID, "mp_SigTask"),
         (ListStruct, "mp_MsgList"),
     ]
+    _subfield_aliases = {
+        "name" : "mp_Node.ln_Name",
+        "type" : "mp_Node.ln_Type",
+        "pri" : "mp_Node.ln_Pri"
+    }
 
 
 # Message
@@ -140,6 +145,11 @@ class MessageStruct(AmigaStruct):
         (APTR(MsgPortStruct), "mn_ReplyPort"),
         (UWORD, "mn_Length"),
     ]
+    _subfield_aliases = {
+        "name" : "mn_Node.ln_Name",
+        "type" : "mn_Node.ln_Type",
+        "pri" : "mn_Node.ln_Pri"
+    }
 
 
 # IntVector
