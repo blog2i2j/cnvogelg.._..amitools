@@ -89,6 +89,11 @@ class LibraryStruct(AmigaStruct):
         (ULONG, "lib_Sum"),
         (UWORD, "lib_OpenCnt"),
     ]
+    _subfield_aliases = {
+        "name" : "lib_Node.ln_Name",
+        "type" : "lib_Node.ln_Type",
+        "pri" : "lib_Node.ln_Pri"
+    }
 
 
 # List
@@ -216,7 +221,11 @@ class TaskStruct(AmigaStruct):
         (ListStruct, "tc_MemEntry"),
         (APTR_VOID, "tc_UserData"),
     ]
-
+    _subfield_aliases = {
+        "name" : "tc_Node.ln_Name",
+        "type" : "tc_Node.ln_Type",
+        "pri" : "tc_Node.ln_Pri"
+    }
 
 @BitFieldType
 class AttnFlags(BitField, UWORD):
@@ -300,6 +309,12 @@ class ExecLibraryStruct(AmigaStruct):
         (MinListStruct, "ex_MemHandlers"),
         (APTR_VOID, "ex_MemHandler"),
     ]
+    _subfield_aliases = {
+        "name" : "LibNode.lib_Node.ln_Name",
+        "type" : "LibNode.lib_Node.ln_Type",
+        "pri" : "LibNode.lib_Node.ln_Pri",
+        "id_string" : "LibNode.lib_IdString"
+    }
 
 
 # StackSwap

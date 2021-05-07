@@ -13,18 +13,6 @@ class Library(LibraryStruct):
             addr += neg_size
         # now setup library struct
         super().__init__(mem, addr, **kwargs)
-        # type?
-        type = kwargs.get("type")
-        if type:
-            self.node.type.val = type
-        # pri?
-        pri = kwargs.get("pri")
-        if pri:
-            self.node.setup.val = pri
-        # name?
-        name = kwargs.get("name")
-        if name:
-            self.node.name.setup(name, self._alloc, self._free_refs)
 
     def new_lib(self, version=0, revision=0, type=NodeType.NT_LIBRARY, pri=0, flags=0):
         """set all lib values but name, id_str, pos_size, neg_size."""

@@ -14,6 +14,8 @@ def libtypes_execlib_alloc_test():
     mem = MockMemory()
     alloc = MemoryAlloc(mem)
     el = ExecLibrary.alloc(alloc, name="exec.library", id_string="bla", neg_size=20)
+    assert el.name.str == "exec.library"
+    assert el.id_string.str == "bla"
     el.new_lib()
     el.fill_funcs()
     el.free()

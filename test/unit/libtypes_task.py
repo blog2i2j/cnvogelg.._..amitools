@@ -11,7 +11,7 @@ def libtypes_task_base_test():
     # alloc task
     name = "my_task"
     task = Task.alloc(alloc, name=name)
-    assert task.node.name.str == name
+    assert task.name.str == name
     # task setup
     task.new_task(pri=-5, flags=TaskFlags.TF_LAUNCH)
     node = task.node
