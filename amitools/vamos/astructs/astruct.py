@@ -236,12 +236,18 @@ class AmigaStructFields:
     def get_field_by_name(self, name):
         return self._name_to_field.get(name)
 
-    def get_field_by_name_or_alias(self, name):
+    def get_field_by_name_or_alias(self, name, subfield_aliases=None):
         field = self._name_to_field.get(name)
         if not field:
+            # alias name
             alias_name = self.sdef.get_alias_name(name)
             if alias_name:
                 field = self._name_to_field.get(alias_name)
+            # subfield alias
+            if not field and subfield_aliases:
+                field_def_path = subfield_aliases.get(name)
+                if field_def_path:
+                    return self.find_sub_field_by_def_path(field_def_path)
         return field
 
     def find_field_by_offset(self, offset):
@@ -319,6 +325,9 @@ class AmigaStruct(TypeBase):
 
     # overwrite in derived class!
     _format = None
+    # top-level alias names for subfields
+    _subfield_aliases = None
+    _sfdp = None
     # the structure definition is filled in by the decorator
     sdef = None
 
@@ -359,7 +368,7 @@ class AmigaStruct(TypeBase):
         assert type(setup_dict) is dict
         all_refs = []
         for key, val in setup_dict.items():
-            field = self.sfields.get_field_by_name_or_alias(key)
+            field = self.sfields.get_field_by_name_or_alias(key, self._sfdp)
             if field:
                 field.setup(val, alloc, free_refs)
 
@@ -377,7 +386,7 @@ class AmigaStruct(TypeBase):
 
     def get(self, field_name):
         """return field instance by name"""
-        return self.sfields.get_field_by_name_or_alias(field_name)
+        return self.sfields.get_field_by_name_or_alias(field_name, self._sfdp)
 
     def __getattr__(self, field_name):
         field = self.get(field_name)

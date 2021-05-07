@@ -17,10 +17,22 @@ class AmigaStructDecorator(object):
         # setup struct def via format
         struct_def = self._setup_fields(cls, cls._format, type_name)
         cls.sdef = struct_def
+        # any sub field aliases?
+        if cls._subfield_aliases:
+            self._setup_subfield_aliases(cls, cls._subfield_aliases)
         cls._byte_size = struct_def.get_total_size()
         # add to pool
         AmigaStructTypes.add_struct(cls)
         return cls
+
+    def _setup_subfield_aliases(self, cls, aliases):
+        alias_map = {}
+        for alias, path in aliases.items():
+            alias_path = path.split(".")
+            def_path = cls.sdef.find_sub_field_defs_by_name(*alias_path)
+            assert def_path
+            alias_map[alias] = def_path
+        cls._sfdp = alias_map
 
     def _setup_fields(self, cls, format, type_name):
         struct_def = AmigaStructFieldDefs(type_name)

@@ -312,6 +312,9 @@ class SubPlainStruct(AmigaStruct):
         (PlainStruct, "plain"),
         (PlainStruct, "plain2"),
     ]
+    _subfield_aliases = {
+        "name" : "plain.name"
+    }
 
 
 @AmigaClassDef
@@ -323,6 +326,17 @@ def astructs_astruct_class_sub_test():
     mem = MockMemory()
     alloc = MemoryAlloc(mem)
     spc = SubPlainClass.alloc(alloc, plain={"name": "abc"}, plain2={"name": "cde"})
+    assert type(spc) == SubPlainClass
+    assert spc.plain.name.str == "abc"
+    assert spc.plain2.name.str == "cde"
+    spc.free()
+    assert alloc.is_all_free()
+
+
+def astructs_astruct_class_subfield_alias_test():
+    mem = MockMemory()
+    alloc = MemoryAlloc(mem)
+    spc = SubPlainClass.alloc(alloc, name="abc", plain2={"name": "cde"})
     assert type(spc) == SubPlainClass
     assert spc.plain.name.str == "abc"
     assert spc.plain2.name.str == "cde"
