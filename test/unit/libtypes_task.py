@@ -1,7 +1,8 @@
 import pytest
 from amitools.vamos.machine import MockMemory
 from amitools.vamos.mem import MemoryAlloc
-from amitools.vamos.libtypes import Task, TaskFlags, TaskState, NodeType
+from amitools.vamos.libtypes import Task
+from amitools.vamos.libstructs import TaskFlags, TaskState, NodeType
 
 
 def libtypes_task_base_test():
@@ -9,17 +10,17 @@ def libtypes_task_base_test():
     alloc = MemoryAlloc(mem)
     # alloc task
     name = "my_task"
-    task = Task.alloc(alloc, name)
-    assert task.get_name() == name
+    task = Task.alloc(alloc, name=name)
+    assert task.node.name.str == name
     # task setup
-    task.setup(pri=-5, flags=TaskFlags.TF_LAUNCH)
-    node = task.get_node()
-    assert node.get_type() == NodeType.NT_TASK
-    assert node.get_pri() == -5
-    assert task.get_flags() == TaskFlags.TF_LAUNCH
-    assert task.get_state() == TaskState.TS_INVALID
+    task.new_task(pri=-5, flags=TaskFlags.TF_LAUNCH)
+    node = task.node
+    assert node.type.val == NodeType.NT_TASK
+    assert node.pri.val == -5
+    assert task.flags.val == TaskFlags.TF_LAUNCH
+    assert task.state.val == TaskState.TS_INVALID
     assert len(task.mem_entry) == 0
-    assert task.mem_entry.type == NodeType.NT_MEMORY
+    assert task.mem_entry.type.val == NodeType.NT_MEMORY
     # done
     task.free()
     assert alloc.is_all_free()
