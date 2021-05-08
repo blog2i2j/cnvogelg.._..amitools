@@ -315,6 +315,8 @@ class ExecLibraryStruct(AmigaStruct):
         "type": "LibNode.lib_Node.ln_Type",
         "pri": "LibNode.lib_Node.ln_Pri",
         "id_string": "LibNode.lib_IdString",
+        "pos_size": "LibNode.lib_PosSize",
+        "neg_size": "LibNode.lib_NegSize",
     }
 
 
