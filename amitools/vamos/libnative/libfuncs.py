@@ -1,4 +1,5 @@
-from amitools.vamos.libtypes import Library, LibFlags, NodeType, ExecLibrary
+from amitools.vamos.libtypes import Library, ExecLibrary
+from amitools.vamos.libstructs import LibFlags, NodeType
 from amitools.vamos.loader import SegList
 from amitools.vamos.machine.regs import *
 from amitools.vamos.machine.opcodes import op_jmp
@@ -58,7 +59,7 @@ class LibFuncs(object):
     def set_function(self, lib_base, lvo, new_func_addr):
         """return old func addr or None if patch failed"""
         lib = Library(self.mem, lib_base)
-        neg_size = lib.neg_size
+        neg_size = lib.neg_size.val
         if lvo < 0:
             lvo = -lvo
         # check lvo range

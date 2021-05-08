@@ -41,9 +41,9 @@ def libnative_makelib_test():
 
     # check library
     lib = Library(mem, lib_base)
-    assert lib.get_name() == "bla.library"
-    assert lib.get_pos_size() == 36
-    assert lib.get_neg_size() == 20  # round_long(3*6)
+    assert lib.name.str == "bla.library"
+    assert lib.pos_size.val == 36
+    assert lib.neg_size.val == 20  # round_long(3*6)
     assert mem.r32(lib_base - 4) == 0x400
     assert mem.r32(lib_base - 10) == 0x600
     assert mem.r32(lib_base - 16) == 0x800
