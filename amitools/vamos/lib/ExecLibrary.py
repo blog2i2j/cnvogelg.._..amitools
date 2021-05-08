@@ -8,10 +8,11 @@ from amitools.vamos.libstructs import (
     IORequestStruct,
     ListStruct,
     NodeStruct,
+    NodeType,
     SignalSemaphoreStruct,
 )
 from amitools.vamos.libtypes import ExecLibrary as ExecLibraryType
-from amitools.vamos.libtypes import NodeType, List
+from amitools.vamos.libtypes import List
 from amitools.vamos.log import log_exec
 from amitools.vamos.error import VamosInternalError, UnsupportedFeatureError
 from .lexec.PortManager import PortManager
