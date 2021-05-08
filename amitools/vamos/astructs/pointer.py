@@ -129,14 +129,16 @@ class PointerType(TypeBase):
             return self.get_ref_addr()
         elif key == "ref":
             return self.get_ref()
-        return super(PointerType, self).__getattr__(key)
+        else:
+            return super(PointerType, self).__getattr__(key)
 
     def __setattr__(self, key, val):
         if key == "aptr":
             self.set_ref_addr(val)
         elif key == "ref":
-            return self.set_ref(val)
-        super(PointerType, self).__setattr__(key, val)
+            self.set_ref(val)
+        else:
+            super(PointerType, self).__setattr__(key, val)
 
 
 class BCPLPointerType(PointerType):
@@ -168,12 +170,14 @@ class BCPLPointerType(PointerType):
     def __getattr__(self, key):
         if key == "bptr":
             return self.get_ref_baddr()
-        return super(BCPLPointerType, self).__getattr__(key)
+        else:
+            return super(BCPLPointerType, self).__getattr__(key)
 
     def __setattr__(self, key, val):
         if key == "bptr":
             self.set_ref_baddr(val)
-        super(BCPLPointerType, self).__setattr__(key, val)
+        else:
+            super(BCPLPointerType, self).__setattr__(key, val)
 
 
 # pointer type cache

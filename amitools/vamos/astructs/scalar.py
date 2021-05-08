@@ -60,12 +60,14 @@ class ScalarType(TypeBase):
     def __getattr__(self, key):
         if key == "val":
             return self.get()
-        return super(ScalarType, self).__getattr__(key)
+        else:
+            return super(ScalarType, self).__getattr__(key)
 
     def __setattr__(self, key, val):
         if key == "val":
             self.set(val)
-        super(ScalarType, self).__setattr__(key, val)
+        else:
+            super(ScalarType, self).__setattr__(key, val)
 
 
 class SignedType(ScalarType):

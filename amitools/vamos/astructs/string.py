@@ -21,12 +21,14 @@ class CStringType(TypeBase):
     def __getattr__(self, key):
         if key == "str":
             return self.get()
-        return super(CStringType, self).__getattr__(key)
+        else:
+            return super(CStringType, self).__getattr__(key)
 
     def __setattr__(self, key, val):
         if key == "str":
             self.set(val)
-        super(CStringType, self).__setattr__(key, val)
+        else:
+            super(CStringType, self).__setattr__(key, val)
 
     def __eq__(self, other):
         # compare against other string
@@ -35,7 +37,7 @@ class CStringType(TypeBase):
         elif other is None:
             return self.get() is None
         else:
-            super(CStringType, self).__eq__(other)
+            return super(CStringType, self).__eq__(other)
 
     def __str__(self):
         return str(self.get())
@@ -70,12 +72,14 @@ class BStringType(TypeBase):
     def __getattr__(self, key):
         if key == "str":
             return self.get()
-        return super(BStringType, self).__getattr__(key)
+        else:
+            return super(BStringType, self).__getattr__(key)
 
     def __setattr__(self, key, val):
         if key == "str":
             self.set(val)
-        super(BStringType, self).__setattr__(key, val)
+        else:
+            super(BStringType, self).__setattr__(key, val)
 
     def __eq__(self, other):
         # compare against other string
@@ -120,12 +124,14 @@ class CSTR(APTR(CStringType)):
     def __getattr__(self, key):
         if key == "str":
             return self.get_str()
-        return super(CSTR, self).__getattr__(key)
+        else:
+            return super(CSTR, self).__getattr__(key)
 
     def __setattr__(self, key, val):
         if key == "str":
             self.set_str(val)
-        super(CSTR, self).__setattr__(key, val)
+        else:
+            super(CSTR, self).__setattr__(key, val)
 
     def alloc_str(self, alloc, txt):
         return self.alloc_ref(alloc, txt)
@@ -164,12 +170,14 @@ class BSTR(BPTR(BStringType)):
     def __getattr__(self, key):
         if key == "str":
             return self.get_str()
-        return super(BSTR, self).__getattr__(key)
+        else:
+            return super(BSTR, self).__getattr__(key)
 
     def __setattr__(self, key, val):
         if key == "str":
             self.set_str(val)
-        super(BSTR, self).__setattr__(key, val)
+        else:
+            super(BSTR, self).__setattr__(key, val)
 
     def alloc_str(self, alloc, txt):
         return self.alloc_ref(alloc, txt)
