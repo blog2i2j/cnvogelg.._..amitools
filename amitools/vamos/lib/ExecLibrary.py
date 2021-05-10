@@ -37,15 +37,15 @@ class ExecLibrary(LibImpl):
         self.exec_lib.lib_list.new_list(NodeType.NT_LIBRARY)
         self.exec_lib.device_list.new_list(NodeType.NT_DEVICE)
         # set some system contants
+        attn_flags = 0
         if ctx.cpu_name == "68030(fake)":
-            self.exec_lib.attn_flags = 7
+            attn_flags = 7
         elif ctx.cpu_name == "68020":
-            self.exec_lib.attn_flags = 3
+            attn_flags = 3
         elif ctx.cpu_name == "68040":
-            self.exec_lib.attn_flags = 127
-        else:
-            self.exec_lib.attn_flags = 0
-        self.exec_lib.max_loc_mem = ctx.ram_size
+            attn_flags = 127
+        self.exec_lib.attn_flags.val = attn_flags
+        self.exec_lib.max_loc_mem.val = ctx.ram_size
         # create the port manager
         self.port_mgr = PortManager(ctx.alloc)
         self.semaphore_mgr = SemaphoreManager(ctx.alloc, ctx.mem)

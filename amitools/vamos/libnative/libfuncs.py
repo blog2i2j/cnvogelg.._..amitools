@@ -29,7 +29,7 @@ class LibFuncs(object):
 
     def add_library(self, lib_base, exec_lib=None):
         lib = Library(self.mem, lib_base)
-        lib.node.type = NodeType.NT_LIBRARY
+        lib.node.type.val = NodeType.NT_LIBRARY
         self.sum_library(lib_base)
         if exec_lib is None:
             exec_addr = self.mem.r32(4)
