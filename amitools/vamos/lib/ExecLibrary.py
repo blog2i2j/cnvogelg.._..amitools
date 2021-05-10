@@ -52,7 +52,7 @@ class ExecLibrary(LibImpl):
         self.mem = ctx.mem
 
     def set_this_task(self, process):
-        self.exec_lib.this_task = process.this_task.addr
+        self.exec_lib.this_task.aptr = process.this_task.addr
         self.stk_lower = process.get_stack().get_lower()
         self.stk_upper = process.get_stack().get_upper()
 
@@ -80,7 +80,7 @@ class ExecLibrary(LibImpl):
     def FindTask(self, ctx):
         task_ptr = ctx.cpu.r_reg(REG_A1)
         if task_ptr == 0:
-            addr = self.exec_lib.this_task.get_addr()
+            addr = self.exec_lib.this_task.aptr
             log_exec.info("FindTask: me=%06x" % addr)
             return addr
         else:

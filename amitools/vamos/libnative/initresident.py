@@ -57,7 +57,7 @@ class InitRes(object):
                 return 0, None
 
             # add lib to exec list
-            rtype = res.type
+            rtype = res.type.val
             if rtype == NodeType.NT_LIBRARY:
                 lf = LibFuncs(self.machine, self.alloc)
                 lf.add_library(lib_base, exec_lib)
@@ -67,6 +67,8 @@ class InitRes(object):
             elif rtype == NodeType.NT_RESOURCE:
                 # TODO
                 raise NotImplementedError("InitResident(NT_RESOURCE)")
+            else:
+                raise ValueError("InitResident: invalid type!")
 
         else:
             # no auto init, lib_base, or mem_obj

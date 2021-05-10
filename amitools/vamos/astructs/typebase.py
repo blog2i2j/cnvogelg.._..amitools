@@ -108,12 +108,12 @@ class TypeBase:
         elif key == "base_offset":
             return self._base_offset
         else:
-            raise AttributeError(self, key)
+            raise AttributeError("Invalid get key '{}' in {}".format(key, repr(self)))
 
     def __setattr__(self, key, val):
         # check for invalid keys
-        if key in ("val", "aptr", "bptr"):
-            raise AttributeError("Invalid key '{}' in {}".format(key, self))
+        if key in ("val", "aptr", "bptr", "ref"):
+            raise AttributeError("Invalid set key '{}' in {}".format(key, repr(self)))
         super().__setattr__(key, val)
 
     # allocation

@@ -40,7 +40,7 @@ class AccessStruct(object):
         field = None
         # walk along fields in name "bla.foo.bar"
         for field_name in name.split("."):
-            assert struct
+            assert struct is not None
             field_def = struct.sdef.find_field_def_by_name(field_name)
             if not field_def:
                 raise KeyError(self, name)
