@@ -392,4 +392,12 @@ class AmigaStruct(TypeBase):
         field = self.get(field_name)
         if field is not None:
             return field
-        return super(AmigaStruct, self).__getattr__(field_name)
+        return super().__getattr__(field_name)
+
+    def __setattr__(self, field_name, val):
+        if field_name[0] != '_' and field_name != 'sfields':
+            # check for field name and forbid access
+            field = self.get(field_name)
+            if field is not None:
+                raise AttributeError("Field {} is read-only in {}".format(field_name, self))
+        super().__setattr__(field_name, val)

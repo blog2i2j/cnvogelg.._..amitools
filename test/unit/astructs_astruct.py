@@ -1,3 +1,4 @@
+import pytest
 from amitools.vamos.machine import MockMemory
 from amitools.vamos.mem import MemoryAlloc
 from amitools.vamos.astructs import (
@@ -96,6 +97,9 @@ def astructs_astruct_base_inst_test():
     # find field
     field = ms.ms_Word
     assert ms.sfields.find_sub_field_by_def(MyStruct.sdef.ms_Word) == field
+    # try to assign field directly -> forbidden!
+    with pytest.raises(AttributeError):
+        ms.ms_Word = 42
 
 
 def astructs_astruct_base_inst_setup_test():
