@@ -1,3 +1,4 @@
+import pytest
 from amitools.vamos.astructs.typebase import TypeBase
 from amitools.vamos.astructs.scalar import ULONG, LONG, UWORD, WORD, UBYTE, BYTE
 from amitools.vamos.machine import MockMemory, MockCPU, REG_D0
@@ -22,6 +23,11 @@ def astructs_scalar_mem_test():
     # test val access
     l.val = 42
     assert l.val == 42
+    # invalid .aptr or .bptr access
+    with pytest.raises(AttributeError):
+        l.aptr = 42
+    with pytest.raises(AttributeError):
+        l.bptr = 42
 
 
 def astructs_scalar_reg_test():

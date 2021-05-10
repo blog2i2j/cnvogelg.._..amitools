@@ -1,3 +1,4 @@
+import pytest
 from amitools.vamos.astructs.typebase import TypeBase
 from amitools.vamos.astructs.pointer import (
     PointerType,
@@ -38,6 +39,9 @@ def astructs_pointer_aptr_void_test():
     # check 'aptr'
     void_ptr.aptr = 0x200
     assert void_ptr.aptr == 0x200
+    # invalid .val access
+    with pytest.raises(AttributeError):
+        void_ptr.val = 12
 
 
 def astructs_pointer_aptr_null_test():
@@ -81,6 +85,9 @@ def astructs_pointer_bptr_void_test():
     void_ptr.bptr = 0x200
     assert void_ptr.bptr == 0x200
     assert void_ptr.get() == 0x200
+    # invalid .val access
+    with pytest.raises(AttributeError):
+        void_ptr.val = 12
 
 
 def astructs_pointer_bptr_null_test():

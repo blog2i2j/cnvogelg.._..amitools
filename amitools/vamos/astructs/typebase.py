@@ -110,6 +110,12 @@ class TypeBase:
         else:
             raise AttributeError(self, key)
 
+    def __setattr__(self, key, val):
+        # check for invalid keys
+        if key in ("val", "aptr", "bptr"):
+            raise AttributeError("Invalid key '{}' in {}".format(key, self))
+        super().__setattr__(key, val)
+
     # allocation
 
     @classmethod
