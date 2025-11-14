@@ -5,7 +5,7 @@ class ScheduleParser(Parser):
     def __init__(self, ini_prefix=None):
         def_cfg = {
             "schedule": {
-                "slice_cycles": 1000,
+                "slice_cycles": 100_000,
             }
         }
         arg_cfg = {

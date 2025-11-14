@@ -35,7 +35,7 @@ class Scheduler(object):
     def __init__(self, machine, config=None):
         if not config:
             config = SchedulerConfig()
-
+        log_schedule.info("setup scheduler with %d slice cycles", config.slice_cycles)
         self.machine = machine
         self.config = config
         # state
