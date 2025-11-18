@@ -57,12 +57,15 @@ class Process(DosProcess):
             self.arg_base = 0
 
         # create the DosProcess
-        super().__init__(ctx.machine, ctx.alloc, self.bin_basename,
-                         stack_size=stack_size,
-                         seg_list=self.bin_seg_list,
-                         start_pc=self.prog_start,
-                         start_regs=self._get_start_regs(stack_size),
-                         return_regs=[REG_D0])
+        super().__init__(
+            ctx.machine,
+            ctx.alloc,
+            self.bin_basename,
+            stack_size=stack_size,
+            start_pc=self.prog_start,
+            start_regs=self._get_start_regs(stack_size),
+            return_regs=[REG_D0],
+        )
 
         # thor: the boot shell creates its own CLI if it is not there.
         # but for now, supply it with the Vamos CLI and let it initialize
@@ -85,8 +88,9 @@ class Process(DosProcess):
         self.free_shell_packet()
         self.free_cli_struct()
         self.free_args()
-        self.stack.free()
         self.unload_binary()
+
+        super().free()
 
     def __str__(self):
         return "[bin='%s']" % self.bin_file
@@ -117,10 +121,6 @@ class Process(DosProcess):
             lock_mgr = self.ctx.dos_lib.lock_mgr
             lock_mgr.release_lock(self.cwd_lock)
 
-    # ----- stack -----
-    def get_stack(self):
-        return self.stack
-
     # ----- binary -----
     def load_binary(self, lock, ami_bin_file, shell=False):
         self.bin_basename = self.ctx.path_mgr.ami_name_of_path(lock, ami_bin_file)
@@ -130,15 +130,18 @@ class Process(DosProcess):
         if not sys_path:
             log_proc.error("failed loading binary: %s -> %s", ami_bin_file, sys_path)
             return False
+
         self.bin_seg_list = self.ctx.seg_loader.load_sys_seglist(sys_path)
         if self.bin_seg_list == 0:
             log_proc.error("failed loading seglist: %s", sys_path)
             return False
-        info = self.ctx.seg_loader.get_info(self.bin_seg_list)
-        if not info:
+
+        self.bin_seg_info = self.ctx.seg_loader.get_info(self.bin_seg_list)
+        if not self.bin_seg_info:
             log_proc.error("failed getting binary info: %s", ami_bin_file)
             return False
-        self.prog_start = info.seglist.get_segment().get_addr()
+
+        self.prog_start = self.bin_seg_info.seglist.get_segment().get_addr()
         # set home dir and get lock
         self.home_dir = self.ctx.path_mgr.ami_dir_of_path(lock, ami_path)
         lock_mgr = self.ctx.dos_lib.lock_mgr
@@ -151,8 +154,8 @@ class Process(DosProcess):
         if shell:
             self.prog_start += 8
             self.shell_start = self.prog_start
-        log_proc.info("loaded binary: %s", info)
-        for seg in info.seglist:
+        log_proc.info("loaded binary: %s", self.bin_seg_info)
+        for seg in self.bin_seg_info.seglist:
             log_proc.info(seg)
         return True
 

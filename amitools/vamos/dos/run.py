@@ -76,5 +76,8 @@ def run_command(process, start_pc, args_ptr, args_len, stack_size, reg_d1=0):
     process.this_task.access.w_s("pr_Task.tc_SPLower", oldstack_lower)
     process.this_task.access.w_s("pr_Task.tc_SPUpper", oldstack_upper)
 
+    # free stack
+    new_stack.free()
+
     # result code
     return ret_code
