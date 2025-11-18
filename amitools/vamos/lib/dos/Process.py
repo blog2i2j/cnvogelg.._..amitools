@@ -10,16 +10,13 @@ from amitools.vamos.machine.regs import (
     REG_A5,
     REG_A6,
 )
-from amitools.vamos.libtypes import Process as ProcessType
-from amitools.vamos.machine import Code
-from amitools.vamos.schedule import NativeTask
-from amitools.vamos.task import Stack
+from amitools.vamos.task import DosProcess
 
 
 NT_PROCESS = 13
 
 
-class Process:
+class Process(DosProcess):
     def __init__(
         self,
         ctx,
@@ -36,40 +33,53 @@ class Process:
         arg_str   Shell-style parameter string with trailing newline
         """
         self.ctx = ctx
-        if input_fh == None:
+        self.bin_file = bin_file
+        self.arg_str = arg_str
+        self.shell = shell
+
+        if input_fh is None:
             input_fh = self.ctx.dos_lib.file_mgr.get_input()
-        if output_fh == None:
+        if output_fh is None:
             output_fh = self.ctx.dos_lib.file_mgr.get_output()
+
         self.init_cwd(cwd, cwd_lock)
 
+        # load the binary
         self.ok = self.load_binary(self.cwd_lock, bin_file, shell)
         if not self.ok:
             self.free_cwd()
             return
-        # setup stack
-        self.stack = Stack.alloc(self.ctx.alloc, stack_size)
-        log_proc.info(self.stack)
+
+        if not shell:
+            self.init_args(arg_str, input_fh)
+        else:
+            self.arg = None
+            self.arg_base = 0
+
+        # create the DosProcess
+        super().__init__(ctx.machine, ctx.alloc, self.bin_basename,
+                         stack_size=stack_size,
+                         seg_list=self.bin_seg_list,
+                         start_pc=self.prog_start,
+                         start_regs=self._get_start_regs(stack_size),
+                         return_regs=[REG_D0])
+
         # thor: the boot shell creates its own CLI if it is not there.
         # but for now, supply it with the Vamos CLI and let it initialize
         # it through the private CliInit() call of the dos.library
         if not shell:
-            self.shell = False
-            self.init_args(arg_str, input_fh)
             self.init_cli_struct(input_fh, output_fh, self.bin_basename)
         else:
-            self.arg = None
-            self.arg_base = 0
-            self.shell = True
             self.init_cli_struct(None, None, None)
         self.shell_message = None
         self.shell_packet = None
         self.shell_port = None
+
         self.init_task_struct(input_fh, output_fh)
         self.set_cwd()
-        self._init_task(ctx.machine)
 
     def free(self):
-        if self.shell == False:
+        if not self.shell:
             self.free_cwd()
         self.free_task_struct()
         self.free_shell_packet()
@@ -114,7 +124,6 @@ class Process:
     # ----- binary -----
     def load_binary(self, lock, ami_bin_file, shell=False):
         self.bin_basename = self.ctx.path_mgr.ami_name_of_path(lock, ami_bin_file)
-        self.bin_file = ami_bin_file
         sys_path, ami_path = self.ctx.path_mgr.ami_command_to_sys_path(
             lock, ami_bin_file
         )
@@ -171,7 +180,7 @@ class Process:
             self.ctx.alloc.free_memory(self.arg)
 
     # ----- scheduler task setup -----
-    def _get_start_regs(self):
+    def _get_start_regs(self, stack_size):
         regs = {}
         if self.shell:
             # thor: If we run a shell through vamos, then
@@ -184,48 +193,12 @@ class Process:
             regs[REG_A0] = self.arg_base
         # d2=stack_size.  this value is also in 4(sp) (see Process.init_stack), but
         # various C programs rely on it being present (1.3-3.1 at least have it).
-        regs[REG_D2] = self.stack.get_size()
+        regs[REG_D2] = stack_size
         # fill old dos regs with guard
         regs[REG_A2] = self.ctx.odg_base
         regs[REG_A5] = self.ctx.odg_base
         regs[REG_A6] = self.ctx.odg_base
         return regs
-
-    def _init_task(self, machine):
-        name = self.bin_basename
-        init_pc = self.prog_start
-        start_regs = self._get_start_regs()
-        return_regs = [REG_D0]
-        sp = self.stack.get_initial_sp()
-        code = Code(init_pc, sp, start_regs, return_regs)
-        self.sched_task = NativeTask(name, machine, code)
-        # store back ref to process
-        self.sched_task.map_task = self
-
-        # sync task state
-        def map_state(task, state):
-            self.ami_task.tc_State.val = state.name
-
-        self.sched_task.set_state_callback(map_state)
-
-        # sync sigmask
-        def map_sigmask(task, sigmask_received, sigmask_wait):
-            self.ami_task.tc_SigRecvd.val = sigmask_received
-            self.ami_task.tc_SigWait.val = sigmask_wait
-
-        self.sched_task.set_sigmask_callback(map_sigmask)
-
-        # hack to find map_task
-        self.map_task = self
-
-    def get_ami_task(self):
-        return self
-
-    def get_ami_process(self):
-        return self
-
-    def get_sched_task(self):
-        return self.sched_task
 
     # ----- cli struct -----
     def init_cli_struct(self, input_fh, output_fh, name):
@@ -298,14 +271,12 @@ class Process:
 
     # ----- task struct -----
     def init_task_struct(self, input_fh, output_fh):
+        # memory adress of proc
+        self.addr = self.ami_proc.addr
+        # legacy: old struct mapping
+        self.this_task = self.ctx.alloc.map_struct(self.addr, ProcessStruct)
         # Inject arguments into input stream (Needed for C:Execute)
-        self.this_task = self.ctx.alloc.alloc_struct(
-            ProcessStruct, label=self.bin_basename + "_ThisTask"
-        )
-        self.addr = self.this_task.addr
         self.seglist = self.ctx.alloc.alloc_memory(24, label="Process Seglist")
-        self.this_task.access.w_s("pr_Task.tc_Node.ln_Type", NT_PROCESS)
-        self.this_task.access.w_s("pr_Task.tc_SigAlloc", 0xFFFF)
         self.this_task.access.w_s("pr_SegList", self.seglist.addr)
         self.this_task.access.w_s("pr_CLI", self.cli.addr)
         self.this_task.access.w_s(
@@ -329,12 +300,8 @@ class Process:
         varlist.access.w_s("mlh_TailPred", varlist.addr)
         # setup arg string
         self.set_arg_str_ptr(self.arg_base)
-        # wrap struct into a Process/Task type
-        self.ami_proc = ProcessType(self.ctx.mem, self.addr)
-        self.ami_task = self.ami_proc.task
 
     def free_task_struct(self):
-        self.ctx.alloc.free_struct(self.this_task)
         self.ctx.alloc.free_memory(self.seglist)
 
     def get_local_vars(self):

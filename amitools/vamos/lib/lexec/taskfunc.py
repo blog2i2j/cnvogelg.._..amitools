@@ -11,7 +11,7 @@ class TaskFunc(FuncBase):
             return Task(self.ctx.mem, addr)
         else:
             # this task?
-            my_task = self.get_my_task()
+            my_task = self.get_my_ami_task()
             if my_task.node.name.str == task_name:
                 addr = my_task.addr
                 log_exec.info("Find Task '%s': me=%08x", task_name, addr)

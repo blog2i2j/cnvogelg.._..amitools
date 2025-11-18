@@ -1,4 +1,5 @@
 from amitools.vamos.libcore import LibCtx
+from amitools.vamos.task import ExecTask, DosProcess
 
 
 class ExecLibCtx(LibCtx):
@@ -17,7 +18,12 @@ class ExecLibCtx(LibCtx):
         self.process = None
 
     def set_cur_task_process(self, task, process):
+        if task:
+            assert isinstance(task, ExecTask)
         self.task = task
+        # process is optional if its really a DosProcess
+        if process:
+            assert isinstance(process, DosProcess)
         self.process = process
 
     def __str__(self):

@@ -4,7 +4,7 @@ from amitools.vamos.log import log_exec
 
 class SignalFunc(FuncBase):
     def alloc_signal(self, sig_num):
-        task = self.get_my_task()
+        task = self.get_my_ami_task()
         old_mask = task.sig_alloc.val
         new_signal = sig_num
         if new_signal == -1:
@@ -35,7 +35,7 @@ class SignalFunc(FuncBase):
         return new_signal
 
     def free_signal(self, sig_num):
-        task = self.get_my_task()
+        task = self.get_my_ami_task()
         # invalid signal?
         if sig_num == -1:
             log_exec.warning("FreeSignal(%d) for task %s?!", sig_num, task)
@@ -66,7 +66,7 @@ class SignalFunc(FuncBase):
         sched_task = self.get_my_sched_task()
         old_signals = sched_task.set_signal(new_signals, signal_mask)
         # just to be sure dump task val
-        task = self.get_my_task()
+        task = self.get_my_ami_task()
         real_mask = task.sig_recvd.val
         log_exec.info(
             "SetSignals: new_signals=%08x signal_mask=%08x old_signals=%08x real_mask=%08x",

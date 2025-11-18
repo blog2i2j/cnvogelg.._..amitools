@@ -65,18 +65,6 @@ class ExecLibrary(LibImpl):
         sp = ctx.cpu.r_reg(REG_A7)
         return ctx.mem.r32(sp)
 
-    def get_my_task(self, ctx):
-        """return Amiga Task structure to access current task"""
-        ptr = self.exec_lib.this_task.aptr
-        return Task(ctx.mem, ptr)
-
-    def get_my_sched_task(self, ctx):
-        """return the scheduler task associated with current task
-
-        the scheduler task is needed for task/signals
-        """
-        return ctx.task.map_task.get_sched_task()
-
     # ----- System -----
 
     def AllocSignal(self, ctx, signal_num: BYTE):

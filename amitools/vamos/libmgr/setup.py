@@ -130,13 +130,15 @@ class SetupLibManager(object):
         if sched_task:
             map_task = sched_task.map_task
             log_libmgr.info("current task: %s", map_task)
-            ami_task = map_task.get_ami_task()
-            ami_proc = map_task.get_ami_process()
-            task_addr = ami_task.addr
         else:
+            map_task = None
             log_libmgr.info("current task: none")
-            ami_task = None
-            ami_proc = None
-            task_addr = 0
-        self.exec_ctx.set_cur_task_process(ami_task, ami_proc)
-        self.dos_ctx.set_cur_process(ami_proc)
+
+        # is the map task a process?
+        if map_task and map_task.ami_proc:
+            process = map_task
+        else:
+            process = None
+
+        self.exec_ctx.set_cur_task_process(map_task, process)
+        self.dos_ctx.set_cur_process(process)
