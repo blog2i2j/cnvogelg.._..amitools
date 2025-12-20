@@ -228,7 +228,7 @@ The path is defined either on the command line with:
 
     ./vamos -p sys:c,sc:c
 
-Note a single list with absolute AmigaOS path seperated by comma is given.
+Note a single list with absolute AmigaOS path separated by comma is given.
 
 In the config file you state:
 
