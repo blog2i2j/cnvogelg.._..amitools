@@ -81,14 +81,13 @@ def pytest_addoption(parser):
         help="do not force rebuild of old binaries",
     )
     parser.addoption(
-        "--profile",
-        "-P",
+        "--profile-libs",
         action="store_true",
         default=False,
         help="create a profile file",
     )
     parser.addoption(
-        "--profile-file",
+        "--profile-libs-file",
         action="store",
         default="vamos-prof.json",
         help="set the profile file name",
@@ -126,8 +125,8 @@ def pytest_configure(config):
     if vamos_args:
         VAMOS_ARGS += vamos_args
     # enable profiling
-    if config.getoption("profile"):
-        file = config.getoption("profile_file")
+    if config.getoption("profile_libs"):
+        file = config.getoption("profile_libs_file")
         file = os.path.abspath(file)
         print("creating profile: %s" % file)
         # clear profile file if existing
